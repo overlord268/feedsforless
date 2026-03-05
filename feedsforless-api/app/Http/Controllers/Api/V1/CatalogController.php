@@ -12,7 +12,7 @@ class CatalogController extends Controller
 {
     public function index(): AnonymousResourceCollection
     {
-        $products = Product::where('status', 'published')->paginate(15);
+        $products = Product::where('status', 'published')->with(['categories', 'packaging.packagingType'])->paginate(15);
 
         return ProductResource::collection($products);
     }

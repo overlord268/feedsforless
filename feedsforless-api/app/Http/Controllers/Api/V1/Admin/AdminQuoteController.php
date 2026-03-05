@@ -57,10 +57,23 @@ class AdminQuoteController extends Controller
 
             return $quoteRequest->load(['items.product', 'items.packagingType']);
         });
-
         return response()->json([
             'message' => 'Quote prices updated successfully',
             'data' => new QuoteRequestResource($updatedQuote)
+        ]);
+    }
+
+    public function updateStatus(Request $request, QuoteRequest $quote): JsonResponse
+    {
+        $validated = $request->validate([
+            'status' => 'required|in:pending,quoted,accepted,rejected,expired,cancelled'
+        ]);
+
+        $quote->update(['status' => $validated['status']]);
+
+        return response()->json([
+            'message' => 'Quote status updated successfully',
+            'data' => new QuoteRequestResource($quote->fresh(['items.product', 'items.packagingType']))
         ]);
     }
 }

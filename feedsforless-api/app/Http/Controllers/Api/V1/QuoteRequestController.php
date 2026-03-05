@@ -14,6 +14,16 @@ use Exception;
 
 class QuoteRequestController extends Controller
 {
+    public function index(Request $request): \Illuminate\Http\Resources\Json\AnonymousResourceCollection
+    {
+        $quotes = QuoteRequest::with(['items.product', 'items.packagingType', 'address'])
+            ->where('request_by_id', $request->user()->id)
+            ->orderBy('created_at', 'desc')
+            ->paginate(15);
+
+        return QuoteRequestResource::collection($quotes);
+    }
+
     public function submit(
         SubmitQuoteRequestRequest $request,
         SubmitQuoteRequestAction $action

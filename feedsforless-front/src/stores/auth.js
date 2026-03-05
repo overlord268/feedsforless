@@ -1,12 +1,10 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import { useRouter } from 'vue-router';
 import api from '../services/api';
 
 export const useAuthStore = defineStore('auth', () => {
     const token = ref(localStorage.getItem('token') || null);
     const user = ref(null);
-    const router = useRouter();
 
     const setToken = (newToken) => {
         token.value = newToken;
@@ -20,27 +18,35 @@ export const useAuthStore = defineStore('auth', () => {
     };
 
     const login = async (credentials) => {
-        const response = await api.post('/auth/login', credentials);
+        const response = await api.post('/api/v1/auth/login', credentials);
         setToken(response.data.token);
         user.value = response.data.user;
     };
 
     const register = async (userData) => {
-        const response = await api.post('/auth/register', userData);
+        const response = await api.post('/api/v1/auth/register', userData);
         setToken(response.data.token);
         await fetchUser();
     };
 
     const fetchUser = async () => {
-        const response = await api.get('/auth/me');
+        const response = await api.get('/api/v1/auth/me');
         user.value = response.data.user;
     };
 
     const logout = async () => {
-        await api.post('/auth/logout');
+        try {
+            await api.post('/api/v1/auth/logout');
+        } catch (e) {
+            // Ignore errors on logout (e.g. token already expired)
+        }
         clearAuth();
-        router.push({ name: 'Login' });
     };
+    if (token.value) {
+        fetchUser().catch(() => {
+            clearAuth();
+        });
+    }
 
     return {
         token,

@@ -29,7 +29,7 @@ class RegisterB2bCustomerAction
                 'job_title' => $dto->jobTitle,
             ]);
 
-            $user->assignRole('Customer');
+            $user->assignRole('customer');
 
             return $user;
         });

@@ -28,6 +28,8 @@ use App\Http\Controllers\Api\V1\Admin\AdminRelatedProductController;
 use App\Http\Middleware\EnsureUserIsAdmin;
 
 Route::prefix('v1')->group(function () {
+    Route::get('/admin/dashboard/stats', [App\Http\Controllers\Api\V1\Admin\DashboardController::class, 'stats']);
+    
     Route::post('/auth/register', [AuthController::class, 'register']);
     Route::post('/auth/login', [AuthController::class, 'login']);
 
@@ -46,6 +48,7 @@ Route::prefix('v1')->group(function () {
         
         Route::apiResource('addresses', AddressController::class);
         
+        Route::get('/quote-requests', [QuoteRequestController::class, 'index']);
         Route::post('/quote-requests', [QuoteRequestController::class, 'submit']);
         Route::post('/quote-requests/{quoteRequest}/accept', [QuoteRequestController::class, 'accept']); 
         Route::post('/quote-requests/{quoteRequest}/reject', [QuoteRequestController::class, 'reject']); 

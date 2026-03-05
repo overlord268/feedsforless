@@ -1,19 +1,33 @@
 import axios from 'axios';
+import { useAuthStore } from '../stores/auth';
 
 const api = axios.create({
-    baseURL: 'http://127.0.0.1:8000/api/v1',
+    baseURL: 'http://localhost:8000',
     headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
-    }
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+    },
+    withCredentials: true
 });
 
-api.interceptors.request.use((config) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
+api.interceptors.request.use(config => {
+    const authStore = useAuthStore();
+    if (authStore.token) {
+        config.headers.Authorization = `Bearer ${authStore.token}`;
     }
     return config;
 });
+
+api.interceptors.response.use(
+    response => response,
+    error => {
+        if (error.response?.status === 401) {
+            const authStore = useAuthStore();
+            authStore.logout();
+            window.location.href = '/login';
+        }
+        return Promise.reject(error);
+    }
+);
 
 export default api;
