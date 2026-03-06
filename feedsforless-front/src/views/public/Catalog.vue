@@ -1,18 +1,17 @@
 <template>
   <div class="space-y-8 animate-in fade-in duration-500">
-    <!-- Header -->
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
       <div>
-        <h1 class="text-3xl font-bold tracking-tight text-slate-900">Product Catalog</h1>
-        <p class="text-slate-500 mt-1">Browse our available ingredients and request quotes.</p>
+        <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">Product Catalog</h1>
+        <p class="text-slate-500 mt-1 text-sm sm:text-base">Browse our available ingredients and request quotes.</p>
       </div>
-      <div class="flex items-center gap-3">
-        <div class="relative">
+      <div class="flex items-center gap-3 w-full md:w-auto">
+        <div class="relative flex-1 md:flex-initial md:w-64">
           <input
             v-model="searchQuery"
             type="text"
             placeholder="Search products..."
-            class="w-64 pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all shadow-sm"
+            class="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all shadow-sm"
           />
           <svg class="w-4 h-4 text-slate-400 absolute left-3.5 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -34,7 +33,7 @@
         v-for="cat in allCategories"
         :key="cat.id"
         @click="selectedCategory = cat.id"
-        class="px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 border"
+        class="px-4 py-2.5 sm:py-2 rounded-full text-sm font-medium transition-all duration-200 border touch-manipulation min-h-[44px] sm:min-h-0"
         :class="selectedCategory === cat.id
           ? 'bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-500/20'
           : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50 hover:border-slate-300'"
@@ -71,7 +70,6 @@
         :key="product.id"
         class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:border-slate-300 transition-all duration-300 flex flex-col group overflow-hidden"
       >
-        <!-- Card Header -->
         <div class="p-6 pb-4 flex-1">
           <div class="flex items-start justify-between mb-3">
             <span class="text-xs font-mono text-slate-400 tracking-wider">{{ product.sku }}</span>
@@ -154,7 +152,6 @@
       </div>
     </div>
 
-    <!-- Pagination Info -->
     <div v-if="!loading && filteredProducts.length > 0" class="text-center text-sm text-slate-400 pt-2">
       Showing {{ filteredProducts.length }} product{{ filteredProducts.length !== 1 ? 's' : '' }}
     </div>
@@ -164,13 +161,13 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import api from '../../services/api';
+import { useToast } from '../../composables/useToast';
 
 const products = ref([]);
 const loading = ref(true);
 const searchQuery = ref('');
 const selectedCategory = ref(null);
 
-// Extract unique categories from products
 const allCategories = computed(() => {
   const map = new Map();
   products.value.forEach(p => {
@@ -231,10 +228,7 @@ const fetchProducts = async () => {
   try {
     const response = await api.get('/api/v1/catalog/products');
     const items = response.data.data || response.data;
-    
-    // Initialize component-level state for ordering
     products.value = items.map(p => {
-      // Auto-select first packaging option if available
       const defaultPackagingId = p.packaging_options?.length > 0 
         ? p.packaging_options[0].packaging_type_id 
         : null;
@@ -268,14 +262,14 @@ const addToQuote = async (product) => {
       quantity: product.qtyToAdd,
       packaging_type_id: product.selectedPackagingId || 1
     });
-    alert(`${product.qtyToAdd} x ${product.name} added to your quote request!`);
+    useToast().success(`${product.qtyToAdd} x ${product.name} added to your quote request!`);
     product.qtyToAdd = 1;
   } catch (error) {
     console.error('Failed to add to quote:', error);
     if (error.response?.data?.message) {
-        alert(`Error: ${error.response.data.message}`);
+      useToast().error(error.response.data.message);
     } else {
-        alert('Failed to add product to quote request.');
+      useToast().error('Failed to add product to quote request.');
     }
   } finally {
     product.adding = false;

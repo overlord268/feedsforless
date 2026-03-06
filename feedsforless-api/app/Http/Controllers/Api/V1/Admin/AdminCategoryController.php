@@ -22,6 +22,7 @@ class AdminCategoryController extends Controller
     public function store(StoreCategoryRequest $request): JsonResponse
     {
         $category = Category::create($request->validated());
+        AdminCatalogsController::forgetCache();
 
         return response()->json([
             'message' => 'Category created successfully',
@@ -49,6 +50,7 @@ class AdminCategoryController extends Controller
     public function destroy(Category $category): JsonResponse
     {
         $category->delete();
+        AdminCatalogsController::forgetCache();
 
         return response()->json([
             'message' => 'Category deleted successfully'

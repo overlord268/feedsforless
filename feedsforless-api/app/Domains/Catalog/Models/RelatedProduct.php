@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class RelatedProduct extends Model
 {
+    public $timestamps = false;
+
     protected $fillable = [
         'node_id',
         'link_id',

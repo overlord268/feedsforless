@@ -13,22 +13,22 @@ class AdminNutritionalAnalysisController extends Controller
     public function index(Product $product): JsonResponse
     {
         return response()->json([
-            'data' => $product->nutritionalAnalysis()->with(['parameter', 'measureUnit'])->get()
+            'data' => $product->nutritionalAnalysis()->with(['nutritionalParameter', 'measureUnit'])->get()
         ]);
     }
 
     public function store(Request $request, Product $product): JsonResponse
     {
         $data = $request->validate([
-            'parameter_id' => ['required', 'exists:parameters,id'],
+            'nutritional_parameter_id' => ['required', 'exists:nutritional_parameters,id'],
             'value' => ['required', 'numeric'],
-            'measure_unit_id' => ['required', 'exists:measure_units,id'],
+            'measure_unit_id' => ['nullable', 'exists:measure_units,id'],
         ]);
 
         $analysis = $product->nutritionalAnalysis()->create($data);
 
         return response()->json([
-            'data' => $analysis->load(['parameter', 'measureUnit'])
+            'data' => $analysis->load(['nutritionalParameter', 'measureUnit'])
         ], 201);
     }
 

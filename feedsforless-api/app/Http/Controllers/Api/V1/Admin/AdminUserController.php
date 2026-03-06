@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\Admin\StoreUserRequest;
 use App\Http\Requests\Api\V1\Admin\UpdateUserRequest;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
 
@@ -14,7 +15,7 @@ class AdminUserController extends Controller
 {
     public function index(): JsonResponse
     {
-        $users = User::orderBy('created_at', 'desc')->paginate(15);
+        $users = User::with('roles')->orderBy('created_at', 'desc')->paginate(15);
 
         return response()->json([
             'data' => $users
@@ -65,6 +66,19 @@ class AdminUserController extends Controller
 
         return response()->json([
             'message' => 'User deleted successfully'
+        ], 200);
+    }
+
+    public function assignRole(Request $request, User $user): JsonResponse
+    {
+        $validated = $request->validate([
+            'role' => ['required', 'string', 'in:admin,customer'],
+        ]);
+        $user->syncRoles([$validated['role']]);
+
+        return response()->json([
+            'message' => 'Role updated successfully',
+            'data' => $user->load('roles'),
         ], 200);
     }
 }

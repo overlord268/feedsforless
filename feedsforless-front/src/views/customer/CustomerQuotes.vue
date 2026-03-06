@@ -1,12 +1,26 @@
 <template>
-  <div class="space-y-10 animate-in fade-in duration-500 max-w-5xl mx-auto">
-    
-    <div>
-      <h1 class="text-3xl font-bold tracking-tight text-slate-900">My Quotes</h1>
-      <p class="text-slate-500 mt-1">Manage your current request and view your quote history.</p>
-    </div>
+  <div class="relative min-h-screen animate-in fade-in duration-500">
+    <div class="max-w-5xl mx-auto px-4 pb-12">
+      <div class="flex flex-wrap items-center justify-between gap-4 mb-8">
+        <div>
+          <h1 class="text-3xl font-bold tracking-tight text-slate-900">My Quotes</h1>
+          <p class="text-slate-500 mt-1">Manage your current request and view your quote history.</p>
+        </div>
+        <button
+          type="button"
+          @click="cartOpen = true"
+          class="relative inline-flex items-center gap-2.5 px-5 py-2.5 rounded-xl border-2 border-slate-200 bg-white text-slate-700 font-semibold shadow-sm hover:border-blue-400 hover:bg-blue-50 hover:text-blue-700 transition-all duration-300 hover:shadow-md active:scale-[0.98]"
+        >
+          <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+          </svg>
+          <span>Request basket</span>
+          <span v-if="rfqCount > 0" class="absolute -top-1.5 -right-1.5 min-w-[1.25rem] h-5 px-1 flex items-center justify-center rounded-full bg-blue-500 text-white text-xs font-bold shadow-md">
+            {{ rfqCount }}
+          </span>
+        </button>
+      </div>
 
-    <!-- Loading State -->
     <div v-if="loading" class="space-y-8 animate-pulse">
       <div class="bg-white p-6 rounded-2xl border border-slate-200">
         <div class="h-6 bg-slate-200 rounded w-1/4 mb-4"></div>
@@ -17,112 +31,6 @@
 
     <div v-else class="space-y-10">
 
-      <!-- CURRENT RFQ ITEM (CART) -->
-      <section class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-          <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
-            <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-            Current Request Basket
-          </h2>
-          <span v-if="rfqList?.items?.length" class="text-sm font-medium text-slate-500">
-            {{ rfqList.items.length }} item(s)
-          </span>
-        </div>
-
-        <div v-if="!rfqList || !rfqList.items || rfqList.items.length === 0" class="p-10 text-center">
-          <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-slate-100">
-             <svg class="w-8 h-8 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
-          </div>
-          <p class="text-slate-500 mb-4">Your quote request basket is empty.</p>
-          <router-link to="/catalog" class="inline-flex items-center px-4 py-2 bg-blue-50 text-blue-600 font-medium rounded-lg hover:bg-blue-100 transition-colors text-sm">
-            Browse Catalog
-          </router-link>
-        </div>
-
-        <div v-else class="divide-y divide-slate-100">
-          <!-- Items List -->
-          <ul class="p-0 m-0 list-none">
-            <li v-for="item in rfqList.items" :key="item.id" class="p-6 flex flex-col sm:flex-row sm:items-center gap-4 hover:bg-slate-50/50 transition-colors">
-              <div class="flex-1">
-                <h4 class="font-semibold text-slate-900">{{ item.product?.name || 'Unknown Product' }}</h4>
-                <p class="text-sm text-slate-500 mt-1">
-                  Packaging: <span class="font-medium text-slate-700">{{ item.packaging_type?.name || 'Default' }}</span>
-                </p>
-              </div>
-              <div class="flex items-center gap-6">
-                <div class="text-right">
-                  <p class="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">Quantity</p>
-                  <p class="font-semibold text-slate-900">{{ item.quantity }} units</p>
-                </div>
-                <button @click="removeRfqItem(item.id)" class="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Remove item">
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                </button>
-              </div>
-            </li>
-          </ul>
-
-          <!-- Submit Form -->
-          <div class="p-6 bg-slate-50/50">
-            <h3 class="font-semibold text-slate-800 mb-4">Delivery Details</h3>
-            
-            <form @submit.prevent="submitQuote" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              
-              <!-- Address Selection -->
-              <div class="space-y-1.5 md:col-span-2">
-                <label class="text-sm font-medium text-slate-700">Saved Address (Optional)</label>
-                <select v-model="form.target_address_id" @change="fillZipFromAddress" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all">
-                  <option :value="null">-- Select an address or enter ZIP manually --</option>
-                  <option v-for="address in addresses" :key="address.id" :value="address.id">
-                    {{ address.address_line_1 }}, {{ address.city }}, {{ address.state }} {{ address.zip_code }}
-                  </option>
-                </select>
-                <p v-if="errors.target_address_id" class="text-red-500 text-xs mt-1">{{ errors.target_address_id[0] }}</p>
-              </div>
-
-              <!-- ZIP Code -->
-              <div class="space-y-1.5">
-                <label class="text-sm font-medium text-slate-700">Delivery ZIP Code <span class="text-red-500">*</span></label>
-                <input v-model="form.delivery_zip" type="text" required class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all" placeholder="e.g. 12345">
-                 <p v-if="errors.delivery_zip" class="text-red-500 text-xs mt-1">{{ errors.delivery_zip[0] }}</p>
-              </div>
-
-              <!-- Checkboxes -->
-              <div class="space-y-3 flex flex-col justify-center mt-2 md:mt-6">
-                <label class="flex items-center gap-3 cursor-pointer group">
-                  <div class="relative flex items-center justify-center w-5 h-5 border-2 border-slate-300 rounded group-hover:border-blue-500 transition-colors" :class="{ 'bg-blue-600 border-blue-600': form.requires_liftgate }">
-                    <input type="checkbox" v-model="form.requires_liftgate" class="sr-only">
-                    <svg v-if="form.requires_liftgate" class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                  </div>
-                  <span class="text-sm text-slate-700 select-none">Requires Liftgate</span>
-                </label>
-                
-                <label class="flex items-center gap-3 cursor-pointer group">
-                  <div class="relative flex items-center justify-center w-5 h-5 border-2 border-slate-300 rounded group-hover:border-blue-500 transition-colors" :class="{ 'bg-blue-600 border-blue-600': form.requires_appointment }">
-                    <input type="checkbox" v-model="form.requires_appointment" class="sr-only">
-                    <svg v-if="form.requires_appointment" class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                  </div>
-                  <span class="text-sm text-slate-700 select-none">Requires Delivery Appointment</span>
-                </label>
-              </div>
-
-              <!-- General Error -->
-              <div v-if="submitError" class="md:col-span-2 text-red-500 text-sm p-3 bg-red-50 rounded-lg border border-red-100">
-                {{ submitError }}
-              </div>
-
-              <!-- Submit Button -->
-              <div class="md:col-span-2 flex justify-end pt-4 border-t border-slate-200 mt-2">
-                <button type="submit" :disabled="submitting" class="px-6 py-2.5 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 transition-colors shadow-sm shadow-blue-500/30 disabled:opacity-70 disabled:cursor-not-allowed flex items-center gap-2">
-                  <svg v-if="submitting" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                  <span>{{ submitting ? 'Submitting...' : 'Submit Quote Request' }}</span>
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      </section>
-
-      <!-- QUOTE HISTORY -->
       <section>
         <h2 class="text-xl font-bold text-slate-900 mb-6">Quote History</h2>
         
@@ -157,8 +65,7 @@
                 </li>
               </ul>
             </div>
-            
-            <!-- Actions for quoted status -->
+
             <div v-if="quote.status === 'quoted'" class="mt-4 pt-4 border-t border-slate-100 flex justify-end gap-3">
                <button @click="rejectQuote(quote.id)" class="px-4 py-2 bg-white border border-red-200 text-red-600 font-medium rounded-lg hover:bg-red-50 transition-colors text-sm focus:outline-none focus:ring-2 focus:ring-red-500/50">
                 Reject Quote
@@ -172,20 +79,176 @@
       </section>
 
     </div>
+    </div>
+
+    <Transition name="cart-overlay">
+      <div
+        v-show="cartOpen"
+        class="fixed inset-0 bg-black/40 z-40 backdrop-blur-sm"
+        aria-hidden="true"
+        @click="cartOpen = false"
+      />
+    </Transition>
+    <Transition name="cart-drawer">
+      <aside
+        v-show="cartOpen"
+        class="fixed top-0 right-0 bottom-0 w-full max-w-md bg-white shadow-2xl z-50 flex flex-col border-l border-slate-200 overflow-hidden"
+        aria-label="Quote request basket"
+      >
+        <div class="flex items-center justify-between px-5 py-4 border-b border-slate-200 bg-slate-50/80 shrink-0">
+          <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+            <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+            </svg>
+            Request basket
+          </h2>
+          <button
+            type="button"
+            @click="cartOpen = false"
+            class="p-2 rounded-xl text-slate-500 hover:bg-slate-200 hover:text-slate-800 transition-colors duration-200"
+            aria-label="Close basket"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto">
+          <div v-if="!rfqList || !rfqList.items || rfqList.items.length === 0" class="p-8 text-center">
+            <div class="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <svg class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+              </svg>
+            </div>
+            <p class="text-slate-500 mb-4">Your quote request basket is empty.</p>
+            <router-link to="/catalog" @click="cartOpen = false" class="inline-flex items-center px-4 py-2.5 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 transition-colors text-sm">
+              Browse Catalog
+            </router-link>
+          </div>
+
+          <template v-else>
+            <ul class="p-0 m-0 list-none divide-y divide-slate-100">
+              <li
+                v-for="(item, index) in rfqList.items"
+                :key="item.id"
+                class="px-5 py-4 flex items-center gap-4 hover:bg-slate-50/80 transition-colors"
+              >
+                <div class="flex-1 min-w-0">
+                  <h4 class="font-semibold text-slate-900 truncate">{{ item.product?.name || 'Unknown Product' }}</h4>
+                  <p class="text-sm text-slate-500 mt-0.5">
+                    {{ item.packaging_type?.name || 'Default' }} · {{ item.quantity }} units
+                  </p>
+                </div>
+                <button
+                  @click="removeRfqItem(item.id)"
+                  class="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors shrink-0"
+                  title="Remove item"
+                >
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                  </svg>
+                </button>
+              </li>
+            </ul>
+
+            <div class="p-5 border-t border-slate-200 bg-slate-50/50">
+              <h3 class="font-semibold text-slate-800 mb-4">Delivery details</h3>
+              <form @submit.prevent="submitQuote" class="space-y-4">
+                <div>
+                  <div class="flex items-center justify-between gap-2 mb-1">
+                    <label class="text-sm font-medium text-slate-700">Saved address (optional)</label>
+                    <button
+                      type="button"
+                      @click="addressModalOpen = true"
+                      class="inline-flex items-center justify-center w-8 h-8 rounded-lg border-2 border-dashed border-slate-300 text-slate-500 hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50/80 transition-colors shrink-0"
+                      title="Add new address"
+                    >
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    </button>
+                  </div>
+                  <select v-model="form.target_address_id" @change="fillZipFromAddress" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all mt-1">
+                    <option :value="null">— Select or enter ZIP below —</option>
+                    <option v-for="address in addresses" :key="address.id" :value="address.id">
+                      {{ address.address_line_1 }}, {{ address.city }} {{ address.zip_code }}
+                    </option>
+                  </select>
+                  <p v-if="errors.target_address_id" class="text-red-500 text-xs mt-1">{{ errors.target_address_id[0] }}</p>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-1">ZIP code <span class="text-red-500">*</span></label>
+                  <input v-model="form.delivery_zip" type="text" required class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all" placeholder="e.g. 12345">
+                  <p v-if="errors.delivery_zip" class="text-red-500 text-xs mt-1">{{ errors.delivery_zip[0] }}</p>
+                </div>
+                <div class="space-y-2">
+                  <label class="flex items-center gap-3 cursor-pointer">
+                    <input type="checkbox" v-model="form.requires_liftgate" class="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500">
+                    <span class="text-sm text-slate-700">Requires liftgate</span>
+                  </label>
+                  <label class="flex items-center gap-3 cursor-pointer">
+                    <input type="checkbox" v-model="form.requires_appointment" class="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500">
+                    <span class="text-sm text-slate-700">Requires delivery appointment</span>
+                  </label>
+                </div>
+                <p v-if="submitError" class="text-red-500 text-sm p-3 bg-red-50 rounded-lg border border-red-100">{{ submitError }}</p>
+                <button type="submit" :disabled="submitting" class="w-full py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-colors shadow-md shadow-blue-500/25 disabled:opacity-70 flex items-center justify-center gap-2">
+                  <svg v-if="submitting" class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/></svg>
+                  <span>{{ submitting ? 'Submitting…' : 'Submit quote request' }}</span>
+                </button>
+              </form>
+            </div>
+          </template>
+        </div>
+      </aside>
+    </Transition>
+
+    <AddressFormModal
+      :show="addressModalOpen"
+      @close="addressModalOpen = false"
+      @saved="onNewAddressSaved"
+    />
   </div>
 </template>
 
+<style scoped>
+.cart-overlay-enter-active,
+.cart-overlay-leave-active {
+  transition: opacity 0.3s ease;
+}
+.cart-overlay-enter-from,
+.cart-overlay-leave-to {
+  opacity: 0;
+}
+
+.cart-drawer-enter-active,
+.cart-drawer-leave-active {
+  transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.3s ease;
+}
+.cart-drawer-enter-from,
+.cart-drawer-leave-to {
+  transform: translateX(100%);
+  opacity: 0.9;
+}
+</style>
+
 <script setup>
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, computed, onMounted } from 'vue';
 import api from '../../services/api';
+import AddressFormModal from '../../components/customer/AddressFormModal.vue';
+import { useToast } from '../../composables/useToast';
+import { useConfirm } from '../../composables/useConfirm';
 
 const loading = ref(true);
+const cartOpen = ref(false);
+const addressModalOpen = ref(false);
 const rfqList = ref(null);
 const quotes = ref([]);
 const addresses = ref([]);
 const errors = ref({});
 const submitError = ref('');
 const submitting = ref(false);
+
+const rfqCount = computed(() => rfqList.value?.items?.length ?? 0);
 
 const form = reactive({
   target_address_id: null,
@@ -236,16 +299,25 @@ const fillZipFromAddress = () => {
   }
 };
 
+async function onNewAddressSaved(newAddress) {
+  addressModalOpen.value = false;
+  await fetchData();
+  if (newAddress?.id) {
+    form.target_address_id = newAddress.id;
+    form.delivery_zip = newAddress.zip_code || '';
+  }
+}
+
 const removeRfqItem = async (itemId) => {
-  if (!confirm('Remove this item from your request?')) return;
-  
+  const ok = await useConfirm().show({ title: 'Remove item', message: 'Remove this item from your request?', confirmLabel: 'Remove', cancelLabel: 'Keep', variant: 'danger' });
+  if (!ok) return;
   try {
     await api.delete(`/api/v1/rfq-list/items/${itemId}`);
-    // Refresh RFQ list
     const res = await api.get('/api/v1/rfq-list');
     rfqList.value = res.data.data;
+    useToast().success('Item removed.');
   } catch (e) {
-    alert('Could not remove item.');
+    useToast().error('Could not remove item.');
   }
 };
 
@@ -264,16 +336,13 @@ const submitQuote = async () => {
       requires_liftgate: form.requires_liftgate,
       requires_appointment: form.requires_appointment
     });
-    
-    // Reset form and reload data
     form.target_address_id = null;
     form.delivery_zip = '';
     form.requires_liftgate = false;
     form.requires_appointment = false;
-    
+    cartOpen.value = false;
     await fetchData();
-    alert('Quote request submitted successfully!');
-    
+    useToast().success('Quote request submitted successfully!');
   } catch (error) {
     if (error.response?.status === 422) {
       errors.value = error.response.data.errors || {};
@@ -286,24 +355,28 @@ const submitQuote = async () => {
 };
 
 const acceptQuote = async (id) => {
-    if(!confirm("Are you sure you want to accept this quote?")) return;
-    try {
-        await api.post(`/api/v1/quote-requests/${id}/accept`);
-        await fetchData(); // simple refetch
-    } catch {
-        alert("Failed to accept quote.");
-    }
-}
+  const ok = await useConfirm().show({ title: 'Accept quote', message: 'Are you sure you want to accept this quote?', confirmLabel: 'Accept', cancelLabel: 'Cancel' });
+  if (!ok) return;
+  try {
+    await api.post(`/api/v1/quote-requests/${id}/accept`);
+    await fetchData();
+    useToast().success('Quote accepted.');
+  } catch {
+    useToast().error('Failed to accept quote.');
+  }
+};
 
 const rejectQuote = async (id) => {
-    if(!confirm("Are you sure you want to reject this quote?")) return;
-    try {
-        await api.post(`/api/v1/quote-requests/${id}/reject`);
-        await fetchData(); // simple refetch
-    } catch {
-        alert("Failed to reject quote.");
-    }
-}
+  const ok = await useConfirm().show({ title: 'Reject quote', message: 'Are you sure you want to reject this quote?', confirmLabel: 'Reject', cancelLabel: 'Cancel', variant: 'danger' });
+  if (!ok) return;
+  try {
+    await api.post(`/api/v1/quote-requests/${id}/reject`);
+    await fetchData();
+    useToast().success('Quote rejected.');
+  } catch {
+    useToast().error('Failed to reject quote.');
+  }
+};
 
 onMounted(() => {
   fetchData();

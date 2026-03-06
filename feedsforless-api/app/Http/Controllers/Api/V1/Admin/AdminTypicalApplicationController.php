@@ -2,49 +2,49 @@
 
 namespace App\Http\Controllers\Api\V1\Admin;
 
+use App\Domains\Catalog\Models\TypicalApplication;
 use App\Http\Controllers\Controller;
-use App\Models\Domains\Catalog\Models\TypicalApplication;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class AdminTypicalApplicationController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function index(): JsonResponse
     {
-        //
+        $items = TypicalApplication::orderBy('label', 'asc')->paginate(50);
+        return response()->json(['data' => $items], 200);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
-        //
+        $validated = $request->validate([
+            'label' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string'],
+        ]);
+        $item = TypicalApplication::create($validated);
+        AdminCatalogsController::forgetCache();
+        return response()->json(['message' => 'Typical application created successfully', 'data' => $item], 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(TypicalApplication $typicalApplication)
+    public function show(TypicalApplication $typicalApplication): JsonResponse
     {
-        //
+        return response()->json(['data' => $typicalApplication], 200);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, TypicalApplication $typicalApplication)
+    public function update(Request $request, TypicalApplication $typicalApplication): JsonResponse
     {
-        //
+        $validated = $request->validate([
+            'label' => ['sometimes', 'required', 'string', 'max:255'],
+            'description' => ['nullable', 'string'],
+        ]);
+        $typicalApplication->update($validated);
+        return response()->json(['message' => 'Typical application updated successfully', 'data' => $typicalApplication], 200);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(TypicalApplication $typicalApplication)
+    public function destroy(TypicalApplication $typicalApplication): JsonResponse
     {
-        //
+        $typicalApplication->delete();
+        AdminCatalogsController::forgetCache();
+        return response()->json(['message' => 'Typical application deleted successfully'], 200);
     }
 }

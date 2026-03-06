@@ -11,7 +11,7 @@ class NutritionalAnalysis extends Model
 
     protected $fillable = [
         'product_id',
-        'parameter_id',
+        'nutritional_parameter_id',
         'value',
         'measure_unit_id'
     ];
@@ -21,9 +21,9 @@ class NutritionalAnalysis extends Model
         return $this->belongsTo(Product::class);
     }
 
-    public function parameter(): BelongsTo
+    public function nutritionalParameter(): BelongsTo
     {
-        return $this->belongsTo(Parameter::class);
+        return $this->belongsTo(NutritionalParameter::class);
     }
 
     public function measureUnit(): BelongsTo

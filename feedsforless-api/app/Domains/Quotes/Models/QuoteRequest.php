@@ -18,6 +18,7 @@ class QuoteRequest extends Model
         'requires_appointment',
         'total_estimated_cost',
         'status',
+        'admin_note',
     ];
 
     public function requester(): BelongsTo

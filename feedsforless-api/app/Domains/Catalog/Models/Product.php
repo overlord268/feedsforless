@@ -15,6 +15,7 @@ class Product extends Model
         'sku',
         'name',
         'grade',
+        'base_price_ref',
         'description',
         'origin_address',
         'stock_status',

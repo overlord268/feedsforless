@@ -1,0 +1,43 @@
+{
+  "info": {
+    "name": "FeedsForLess API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@feedsforless.com\",\n  \"password\": \"password\"\n}"
+            },
+            "url": "http://localhost:8000/api/v1/auth/login"
+          }
+        },
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"company_name\": \"Mi Empresa\",\n  \"first_name\": \"Juan\",\n  \"last_name\": \"Pérez\",\n  \"email\": \"juan@empresa.com\",\n  \"password\": \"password123\",\n  \"password_confirmation\": \"password123\",\n  \"phone\": \"+521234567890\",\n  \"job_title\": \"Comprador\",\n  \"tax_classification\": \"general\",\n  \"tax_registration_number\": \"RFC123\"\n}"
+            },
+            "url": "http://localhost:8000/api/v1/auth/register"
+          }
+        }
+      ]
+    }
+  ]
+}

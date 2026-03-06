@@ -22,6 +22,7 @@ class AdminPackagingTypeController extends Controller
     public function store(StorePackagingTypeRequest $request): JsonResponse
     {
         $packagingType = PackagingType::create($request->validated());
+        AdminCatalogsController::forgetCache();
 
         return response()->json([
             'message' => 'Packaging type created successfully',
@@ -39,6 +40,7 @@ class AdminPackagingTypeController extends Controller
     public function update(UpdatePackagingTypeRequest $request, PackagingType $packagingType): JsonResponse
     {
         $packagingType->update($request->validated());
+        AdminCatalogsController::forgetCache();
 
         return response()->json([
             'message' => 'Packaging type updated successfully',
@@ -49,6 +51,7 @@ class AdminPackagingTypeController extends Controller
     public function destroy(PackagingType $packagingType): JsonResponse
     {
         $packagingType->delete();
+        AdminCatalogsController::forgetCache();
 
         return response()->json([
             'message' => 'Packaging type deleted successfully'

@@ -35,6 +35,18 @@ const routes = [
                 component: () => import('../views/admin/AdminProducts.vue')
             },
             {
+                path: 'admin/products/create',
+                name: 'AdminProductCreate',
+                component: () => import('../views/admin/ProductForm.vue'),
+                meta: { productForm: true }
+            },
+            {
+                path: 'admin/products/:id/edit',
+                name: 'AdminProductEdit',
+                component: () => import('../views/admin/ProductForm.vue'),
+                meta: { productForm: true }
+            },
+            {
                 path: 'admin/categories',
                 name: 'AdminCategories',
                 component: () => import('../views/admin/AdminCategories.vue')
@@ -65,9 +77,9 @@ const routes = [
                 component: () => import('../views/admin/AdminSpecifications.vue')
             },
             {
-                path: 'admin/nutritional-analysis',
-                name: 'AdminNutritionalAnalysis',
-                component: () => import('../views/admin/AdminNutritionalAnalysis.vue')
+                path: 'admin/nutritional-parameters',
+                name: 'AdminNutritionalParameters',
+                component: () => import('../views/admin/AdminNutritionalParameters.vue')
             },
             {
                 path: 'admin/handling-specs',

@@ -5,3 +5,8 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
+
+// Asegurar que las rutas API estén bajo /api
+Route::prefix('api')->group(function () {
+    require base_path('routes/api.php');
+});

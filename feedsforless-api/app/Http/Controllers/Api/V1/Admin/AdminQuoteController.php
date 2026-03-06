@@ -16,7 +16,7 @@ class AdminQuoteController extends Controller
 {
     public function index(Request $request): AnonymousResourceCollection
     {
-        $quotes = QuoteRequest::with(['items.product', 'items.packagingType'])
+        $quotes = QuoteRequest::with(['requester', 'items.product', 'items.packagingType'])
             ->orderBy('created_at', 'desc')
             ->paginate(15);
 
@@ -63,17 +63,21 @@ class AdminQuoteController extends Controller
         ]);
     }
 
-    public function updateStatus(Request $request, QuoteRequest $quote): JsonResponse
+    public function updateStatus(Request $request, QuoteRequest $quoteRequest): JsonResponse
     {
         $validated = $request->validate([
-            'status' => 'required|in:pending,quoted,accepted,rejected,expired,cancelled'
+            'status' => 'required|in:pending,quoted,accepted,rejected,expired,cancelled',
+            'admin_note' => ['nullable', 'string', 'max:2000'],
         ]);
 
-        $quote->update(['status' => $validated['status']]);
+        $quoteRequest->update([
+            'status' => $validated['status'],
+            'admin_note' => $validated['admin_note'] ?? $quoteRequest->admin_note,
+        ]);
 
         return response()->json([
-            'message' => 'Quote status updated successfully',
-            'data' => new QuoteRequestResource($quote->fresh(['items.product', 'items.packagingType']))
+            'message' => 'Quote status updated',
+            'data' => new QuoteRequestResource($quoteRequest->fresh(['requester', 'items.product', 'items.packagingType']))
         ]);
     }
 }
