@@ -1,172 +1,160 @@
 <template>
-  <div class="space-y-8 animate-in fade-in duration-500">
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-      <div>
-        <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">Product Catalog</h1>
-        <p class="text-slate-500 mt-1 text-sm sm:text-base">Browse our available ingredients and request quotes.</p>
+  <div class="flex flex-col md:flex-row w-full min-h-screen bg-white">
+    <aside class="w-full md:w-60 shrink-0 border-r border-slate-200 bg-slate-50 min-h-full flex flex-col pt-6 z-10">
+      <div class="px-0 mb-8">
+        <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 px-6">Categories</h3>
+        <nav class="flex flex-col space-y-0.5">
+          <button
+            @click="selectCategory(null)"
+            class="text-left px-6 py-2 text-sm font-bold transition-colors border-l-4"
+            :class="currentView === 'grid' 
+              ? 'bg-[#2962ff] text-white border-blue-700' 
+              : 'text-slate-600 border-transparent hover:bg-slate-200 hover:text-slate-900'"
+          >
+            All Commodities
+          </button>
+          <button
+            v-for="cat in allCategories"
+            :key="cat.id"
+            @click="selectCategory(cat)"
+            class="text-left px-6 py-2 text-sm font-medium transition-colors border-l-4"
+            :class="currentView === 'list' && selectedCategory && selectedCategory.id === cat.id
+              ? 'bg-[#2962ff] text-white border-blue-700 font-bold' 
+              : 'text-slate-600 border-transparent hover:bg-slate-200 hover:text-slate-900'"
+          >
+            {{ cat.label }}
+          </button>
+        </nav>
       </div>
-      <div class="flex items-center gap-3 w-full md:w-auto">
-        <div class="relative flex-1 md:flex-initial md:w-64">
-          <input
-            v-model="searchQuery"
-            type="text"
-            placeholder="Search products..."
-            class="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all shadow-sm"
-          />
-          <svg class="w-4 h-4 text-slate-400 absolute left-3.5 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-        </div>
+      <div class="px-6 mb-8 mt-4 border-t border-slate-200 pt-6">
+        <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Resources</h3>
+        <nav class="flex flex-col space-y-3 text-sm font-bold text-[#2962ff]">
+          <a href="#" class="hover:underline">Logistics Map</a>
+          <a href="#" class="hover:underline">Bulk Volume Tiers</a>
+          <a href="#" class="hover:underline">Tax Exemption Forms</a>
+          <a href="#" class="hover:underline">Supplier Compliance</a>
+        </nav>
       </div>
-    </div>
-    <div v-if="allCategories.length > 0" class="flex flex-wrap gap-2">
-      <button
-        @click="selectedCategory = null"
-        class="px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 border"
-        :class="selectedCategory === null
-          ? 'bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-500/20'
-          : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50 hover:border-slate-300'"
-      >
-        All Products
-      </button>
-      <button
-        v-for="cat in allCategories"
-        :key="cat.id"
-        @click="selectedCategory = cat.id"
-        class="px-4 py-2.5 sm:py-2 rounded-full text-sm font-medium transition-all duration-200 border touch-manipulation min-h-[44px] sm:min-h-0"
-        :class="selectedCategory === cat.id
-          ? 'bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-500/20'
-          : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50 hover:border-slate-300'"
-      >
-        {{ cat.label }}
-      </button>
-    </div>
-    <div v-if="loading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <div v-for="i in 6" :key="i" class="bg-white rounded-2xl border border-slate-200 p-6 animate-pulse">
-        <div class="h-4 bg-slate-200 rounded w-1/3 mb-4"></div>
-        <div class="h-6 bg-slate-200 rounded w-3/4 mb-3"></div>
-        <div class="h-4 bg-slate-200 rounded w-full mb-2"></div>
-        <div class="h-4 bg-slate-200 rounded w-2/3 mb-6"></div>
-        <div class="flex gap-2">
-          <div class="h-6 bg-slate-100 rounded-full w-16"></div>
-          <div class="h-6 bg-slate-100 rounded-full w-20"></div>
-        </div>
-      </div>
-    </div>
+    </aside>
 
-    <div v-else-if="filteredProducts.length === 0" class="text-center py-20">
-      <div class="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-        <svg class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-        </svg>
-      </div>
-      <h3 class="text-lg font-semibold text-slate-700 mb-1">No products found</h3>
-      <p class="text-sm text-slate-500">Try adjusting your search or filter criteria.</p>
-    </div>
-
-    <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <div
-        v-for="product in filteredProducts"
-        :key="product.id"
-        class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:border-slate-300 transition-all duration-300 flex flex-col group overflow-hidden"
-      >
-        <div class="p-6 pb-4 flex-1">
-          <div class="flex items-start justify-between mb-3">
-            <span class="text-xs font-mono text-slate-400 tracking-wider">{{ product.sku }}</span>
-            <span
-              class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold"
-              :class="stockStatusClass(product.stock_status)"
-            >
-              <span class="w-1.5 h-1.5 rounded-full mr-1.5" :class="stockDotClass(product.stock_status)"></span>
-              {{ formatStockStatus(product.stock_status) }}
-            </span>
-          </div>
-
-          <h3 class="text-lg font-bold text-slate-900 mb-1 group-hover:text-blue-600 transition-colors leading-snug">
-            {{ product.name }}
-          </h3>
-
-          <p v-if="product.grade" class="text-sm text-blue-600 font-medium mb-3">
-            Grade: {{ product.grade }}
-          </p>
-
-          <p class="text-sm text-slate-500 leading-relaxed line-clamp-3 mb-4">
-            {{ product.description || 'No description available.' }}
-          </p>
-
-          <div v-if="product.categories && product.categories.length > 0" class="flex flex-wrap gap-1.5">
-            <span
-              v-for="cat in product.categories"
-              :key="cat.id"
-              class="inline-flex items-center px-2.5 py-1 bg-slate-100 text-slate-600 rounded-lg text-xs font-medium"
-            >
-              {{ cat.label }}
-            </span>
-          </div>         
-          <div v-if="product.packaging_options && product.packaging_options.length > 0" class="mb-4">
-            <label class="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1.5">Select Packaging</label>
-            <select 
-              v-model="product.selectedPackagingId"
-              class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all font-medium text-slate-700"
-            >
-              <option v-for="pack in product.packaging_options" :key="pack.packaging_type_id" :value="pack.packaging_type_id">
-                {{ pack.type_name || 'Standard Packaging' }} 
-              </option>
-            </select>
-          </div>
-
-        </div>
-
-        <div class="border-t border-slate-100 px-6 py-4 bg-slate-50/50 flex flex-col gap-3">
-          <div class="flex items-center justify-between">
-            <div class="text-sm text-slate-500">
-              <span v-if="product.availability" class="flex items-center gap-1.5">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                {{ product.availability }}
-              </span>
+    <main class="flex-1 w-full bg-white relative p-6 lg:p-10">
+      <div v-if="currentView === 'grid'" class="animate-in fade-in duration-300">
+        <h1 class="text-3xl font-black italic text-[#003366] uppercase mb-1">Industrial Feed Commodity Catalog</h1>
+        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-8 border-b-2 border-slate-900 pb-4">Direct Supply Chain Portal | North American Distribution</p>
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 border-l border-t border-slate-200">
+          <div 
+            v-for="cat in allCategories" 
+            :key="cat.id"
+            @click="selectCategory(cat)"
+            class="border-r border-b border-slate-200 p-6 flex flex-col h-56 hover:bg-slate-50 cursor-pointer group transition-colors"
+          >
+            <h2 class="text-[#2962ff] font-black uppercase tracking-tight mb-4 text-base">{{ cat.label }}</h2>
+            <div class="flex-1 overflow-hidden">
+              <ul class="text-xs text-slate-600 space-y-2">
+                <li v-for="product in getCategoryProducts(cat.id).slice(0, 3)" :key="product.id" class="truncate">
+                  {{ product.name }}
+                </li>
+              </ul>
             </div>
-            
-            <div class="flex items-center gap-2">
-              <input 
-                type="number" 
-                v-model.number="product.qtyToAdd"
-                min="1"
-                class="w-16 px-2 py-2 border border-slate-200 rounded-lg text-sm text-center focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all font-medium text-slate-700"
-              />
-              <button 
-                @click="addToQuote(product)"
-                :disabled="product.adding || (!product.selectedPackagingId && product.packaging_options?.length > 0)"
-                class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm shadow-blue-500/20 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center min-w-[124px]"
+            <div class="mt-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest group-hover:text-[#2962ff] transition-colors">
+              View Full Directory &rarr;
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div v-else-if="currentView === 'list'" class="animate-in fade-in duration-300">
+        <div class="flex items-end justify-between border-b-2 border-slate-200 pb-4 mb-4">
+          <h1 class="text-2xl font-black uppercase text-slate-900 tracking-tight">{{ selectedCategory ? selectedCategory.label : 'Search Results' }}</h1>
+          <span class="text-sm font-medium text-slate-500">{{ filteredProducts.length }} Products Available</span>
+        </div>
+
+        <div class="overflow-x-auto min-h-[500px]">
+          <table class="w-full text-left text-sm whitespace-nowrap lg:whitespace-normal">
+            <thead>
+              <tr class="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-200">
+                <th class="py-3 px-4 min-w-[300px]">Product Identity</th>
+                <th class="py-3 px-4 w-[120px]">Grade / Spec</th>
+                <th class="py-3 px-4 w-1/4">Packaging</th>
+                <th class="py-3 px-4 w-[160px] text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr 
+                v-for="product in filteredProducts" 
+                :key="product.id" 
+                class="border-b border-slate-200 hover:bg-[#f5f8ff] group transition-colors"
               >
-                <svg v-if="product.adding" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                <span v-else>Add to Quote</span>
-              </button>
-            </div>
-          </div>
-          <p v-if="!product.selectedPackagingId && product.packaging_options?.length > 0" class="text-xs text-red-500 text-right">
-            Please select a packaging type.
-          </p>
+                <td class="py-4 px-4 align-top">
+                  <div class="font-bold text-[#2962ff] text-base mb-0.5 leading-tight cursor-pointer">{{ product.name }}</div>
+                  <div class="text-[11px] text-slate-500 max-w-sm leading-relaxed truncate">{{ product.description || 'Standard specification applicable for general use.' }}</div>
+                </td>
+                <td class="py-4 px-4 align-top font-bold text-slate-700 text-xs">
+                  {{ product.grade || '--' }}
+                </td>
+                <td class="py-4 px-4 align-top text-slate-600 text-xs">
+                  <span v-if="product.packaging_options && product.packaging_options.length > 0">
+                    {{ product.packaging_options.map(p => p.type_name).join(', ') }}
+                  </span>
+                  <span v-else>Bags, Totes, Bulk Truck</span>
+                </td>
+                <td class="py-4 px-4 align-top text-right min-w-[200px]">
+                  <div class="flex items-center justify-end gap-2 flex-wrap">
+                    <button v-if="product.tds_document_path" @click.prevent="previewDocument(product.id, 'tds')" class="bg-slate-200 text-slate-600 hover:bg-slate-300 text-[9px] font-bold px-2 py-1.5 uppercase tracking-wider rounded shrink-0">TDS</button>
+                    <button v-if="product.sds_document_path" @click.prevent="previewDocument(product.id, 'sds')" class="bg-slate-200 text-slate-600 hover:bg-slate-300 text-[9px] font-bold px-2 py-1.5 uppercase tracking-wider rounded shrink-0">SDS</button>
+                    <button v-if="product.coa_document_path" @click.prevent="previewDocument(product.id, 'coa')" class="bg-slate-200 text-slate-600 hover:bg-slate-300 text-[9px] font-bold px-2 py-1.5 uppercase tracking-wider rounded shrink-0">ODA</button>
+                    <router-link
+                      :to="requestQuoteRoute(product)"
+                      class="inline-block bg-[#2962ff] text-white font-bold text-[11px] uppercase tracking-wider px-4 py-2 rounded opacity-0 group-hover:opacity-100 transition-opacity hover:bg-blue-800 shrink-0"
+                    >
+                      Request Quote
+                    </router-link>
+                  </div>
+                </td>
+              </tr>
+              <tr v-if="filteredProducts.length === 0 && !loading">
+                <td colspan="4" class="py-8 text-center text-slate-500 font-medium">No products match the selected criteria.</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
-    </div>
 
-    <div v-if="!loading && filteredProducts.length > 0" class="text-center text-sm text-slate-400 pt-2">
-      Showing {{ filteredProducts.length }} product{{ filteredProducts.length !== 1 ? 's' : '' }}
-    </div>
+    </main>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
 import api from '../../services/api';
-import { useToast } from '../../composables/useToast';
 
+const props = defineProps({
+  searchQuery: {
+    type: String,
+    default: ''
+  }
+});
+
+const router = useRouter();
+const route = useRoute();
 const products = ref([]);
 const loading = ref(true);
-const searchQuery = ref('');
 const selectedCategory = ref(null);
+const currentView = ref('grid');
+
+const apiBaseUrl = api.defaults.baseURL || '';
+
+function requestQuoteRoute(product) {
+  const inApp = route.path.startsWith('/app');
+  return { name: inApp ? 'AppRequestQuote' : 'RequestQuote', query: { productId: product.id } };
+}
+
+function previewDocument(productId, type) {
+  const url = `${apiBaseUrl}/api/v1/catalog/products/${productId}/documents/${type}`;
+  window.open(url, '_blank', 'noopener,noreferrer');
+}
 
 const allCategories = computed(() => {
   const map = new Map();
@@ -183,12 +171,12 @@ const filteredProducts = computed(() => {
 
   if (selectedCategory.value !== null) {
     list = list.filter(p =>
-      (p.categories || []).some(c => c.id === selectedCategory.value)
+      (p.categories || []).some(c => c.id === selectedCategory.value.id)
     );
   }
 
-  if (searchQuery.value.trim()) {
-    const q = searchQuery.value.toLowerCase();
+  if (props.searchQuery && props.searchQuery.trim()) {
+    const q = props.searchQuery.toLowerCase();
     list = list.filter(p =>
       p.name?.toLowerCase().includes(q) ||
       p.sku?.toLowerCase().includes(q) ||
@@ -200,26 +188,17 @@ const filteredProducts = computed(() => {
   return list;
 });
 
-const formatStockStatus = (status) => {
-  if (!status) return 'Unknown';
-  return status.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+const getCategoryProducts = (catId) => {
+  return products.value.filter(p => (p.categories || []).some(c => c.id === catId));
 };
 
-const stockStatusClass = (status) => {
-  switch (status) {
-    case 'in_stock': return 'bg-emerald-50 text-emerald-700';
-    case 'low_stock': return 'bg-amber-50 text-amber-700';
-    case 'out_of_stock': return 'bg-red-50 text-red-700';
-    default: return 'bg-slate-100 text-slate-600';
-  }
-};
-
-const stockDotClass = (status) => {
-  switch (status) {
-    case 'in_stock': return 'bg-emerald-500';
-    case 'low_stock': return 'bg-amber-500';
-    case 'out_of_stock': return 'bg-red-500';
-    default: return 'bg-slate-400';
+const selectCategory = (cat) => {
+  if (cat === null) {
+    selectedCategory.value = null;
+    currentView.value = 'grid';
+  } else {
+    selectedCategory.value = cat;
+    currentView.value = 'list';
   }
 };
 
@@ -235,57 +214,45 @@ const fetchProducts = async () => {
 
       return {
         ...p,
-        qtyToAdd: 1,
+        qtyToAdd: 24,
         adding: false,
         selectedPackagingId: defaultPackagingId
       };
     });
   } catch (error) {
-    console.error('Error fetching products:', error);
+    console.error('Error fetching', error);
   } finally {
     loading.value = false;
-  }
-};
-
-const addToQuote = async (product) => {
-  if (!product.qtyToAdd || product.qtyToAdd < 1) return;
-  
-  if (product.packaging_options?.length > 0 && !product.selectedPackagingId) {
-    alert("Please select a packaging type first.");
-    return;
-  }
-
-  product.adding = true;
-  try {
-    await api.post('/api/v1/rfq-list/items', {
-      product_id: product.id,
-      quantity: product.qtyToAdd,
-      packaging_type_id: product.selectedPackagingId || 1
-    });
-    useToast().success(`${product.qtyToAdd} x ${product.name} added to your quote request!`);
-    product.qtyToAdd = 1;
-  } catch (error) {
-    console.error('Failed to add to quote:', error);
-    if (error.response?.data?.message) {
-      useToast().error(error.response.data.message);
-    } else {
-      useToast().error('Failed to add product to quote request.');
-    }
-  } finally {
-    product.adding = false;
   }
 };
 
 onMounted(() => {
   fetchProducts();
 });
-</script>
 
-<style scoped>
-.line-clamp-3 {
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-</style>
+// Open in list view with category when coming from Home with ?categoryId=
+watch(
+  () => [route.query.categoryId, products.value.length],
+  ([categoryId]) => {
+    const id = categoryId ? Number(categoryId) : null;
+    if (!id || !products.value.length) return;
+    const cat = allCategories.value.find(c => c.id === id);
+    if (cat) selectCategory(cat);
+  },
+  { immediate: true }
+);
+
+// When search has text, show list view with filtered results
+watch(
+  () => props.searchQuery,
+  (q) => {
+    const hasSearch = q && String(q).trim().length > 0;
+    if (hasSearch) {
+      selectedCategory.value = null;
+      currentView.value = 'list';
+    } else if (currentView.value === 'list' && !selectedCategory.value) {
+      currentView.value = 'grid';
+    }
+  }
+);
+</script>

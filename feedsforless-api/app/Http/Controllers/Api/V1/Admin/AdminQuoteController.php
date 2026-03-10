@@ -23,6 +23,23 @@ class AdminQuoteController extends Controller
         return QuoteRequestResource::collection($quotes);
     }
 
+    /**
+     * Notifications for admin header: pending count and recent quotes.
+     */
+    public function notifications(Request $request): JsonResponse
+    {
+        $pendingCount = QuoteRequest::where('status', 'pending')->count();
+        $recent = QuoteRequest::with(['requester', 'items.product'])
+            ->orderBy('created_at', 'desc')
+            ->limit(10)
+            ->get();
+
+        return response()->json([
+            'pending_count' => $pendingCount,
+            'recent' => QuoteRequestResource::collection($recent)->resolve(),
+        ]);
+    }
+
     public function show(QuoteRequest $quoteRequest): QuoteRequestResource
     {
         $quoteRequest->load(['items.product', 'items.packagingType']);

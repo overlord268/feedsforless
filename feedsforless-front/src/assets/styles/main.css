@@ -1,10 +1,13 @@
 @import "tailwindcss";
 
+/* Dark mode by class (sol = claro, luna = oscuro) */
+@custom-variant dark (&:where(.dark, .dark *));
+
 html {
   scroll-behavior: smooth;
 }
 body {
-  @apply antialiased text-slate-900;
+  @apply antialiased text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-900;
 }
 ::selection {
   @apply bg-emerald-200/80 text-slate-900;

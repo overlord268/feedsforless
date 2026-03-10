@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Api\V1;
 use App\Domains\Catalog\Models\Product;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Api\V1\ProductResource;
-use App\Http\Resources\Api\V1\ProductDetailResource;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class CatalogController extends Controller
 {
@@ -17,10 +19,38 @@ class CatalogController extends Controller
         return ProductResource::collection($products);
     }
 
-    public function show(Product $product): ProductDetailResource
+    /**
+     * Single product for catalog (same structure as list; only published).
+     */
+    public function show(int $id): ProductResource|JsonResponse
     {
-        $product->load(['categories', 'packaging']);
+        $model = Product::where('status', 'published')
+            ->with(['categories', 'packaging.packagingType'])
+            ->find($id);
 
-        return new ProductDetailResource($product);
+        if (!$model) {
+            return response()->json(['message' => 'Product not found'], 404);
+        }
+
+        return new ProductResource($model);
+    }
+
+    /**
+     * Public document preview/download for catalog (TDS, SDS, COA/ODA).
+     */
+    public function document(Product $product, string $type): BinaryFileResponse|JsonResponse
+    {
+        if (!in_array($type, ['tds', 'sds', 'coa'], true)) {
+            return response()->json(['message' => 'Invalid document type'], 400);
+        }
+        $pathKey = $type . '_document_path';
+        $path = $product->$pathKey;
+        if (!$path || !Storage::disk('local')->exists($path)) {
+            return response()->json(['message' => 'Document not found'], 404);
+        }
+        $fullPath = Storage::disk('local')->path($path);
+        return response()->file($fullPath, [
+            'Content-Type' => Storage::disk('local')->mimeType($path) ?: 'application/octet-stream',
+        ]);
     }
 }

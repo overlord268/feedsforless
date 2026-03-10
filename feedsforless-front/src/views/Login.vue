@@ -61,11 +61,12 @@
 
 <script setup>
 import { reactive, ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
 import { useToast } from '../composables/useToast';
 
 const router = useRouter();
+const route = useRoute();
 const authStore = useAuthStore();
 const toast = useToast();
 
@@ -84,7 +85,8 @@ const handleSubmit = async () => {
     try {
         await authStore.login(form);
         toast.success('You have signed in successfully.');
-        router.push({ name: 'Dashboard', query: { welcome: '1' } });
+        const redirect = route.query.redirect;
+        router.push(typeof redirect === 'string' && redirect.startsWith('/') ? redirect : { name: 'Dashboard', query: { welcome: '1' } });
     } catch (error) {
         errorMessage.value = error.response?.data?.message || 'Authentication failed. Please try again.';
     } finally {

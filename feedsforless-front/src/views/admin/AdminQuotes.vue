@@ -105,9 +105,12 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, onMounted, watch } from 'vue';
+import { useRoute } from 'vue-router';
 import api from '../../services/api';
 import { useToast } from '../../composables/useToast';
+
+const route = useRoute();
 
 const quotes = ref([]);
 const loading = ref(true);
@@ -165,6 +168,17 @@ function closeDetail() {
   detailQuote.value = null;
 }
 
+async function openDetailByQuoteId(quoteId) {
+  try {
+    const { data } = await api.get(`/api/v1/admin/quote-requests/${quoteId}`);
+    const quote = data?.data ?? data;
+    if (quote) openDetail(quote);
+  } catch (e) {
+    console.error(e);
+    useToast().error('Quote not found.');
+  }
+}
+
 async function saveStatus() {
   if (!detailQuote.value) return;
   savingStatus.value = true;
@@ -209,4 +223,15 @@ async function savePrices() {
 }
 
 onMounted(fetchQuotes);
+
+watch(
+  () => route.query.open,
+  (openId) => {
+    if (openId) {
+      const id = Number(openId);
+      if (id && !Number.isNaN(id)) openDetailByQuoteId(id);
+    }
+  },
+  { immediate: true }
+);
 </script>

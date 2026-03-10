@@ -5,6 +5,14 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>feedsforless-front</title>
+    <script>
+      (function() {
+        var key = 'ffl-theme';
+        var isDark = localStorage.getItem(key) === 'dark';
+        if (isDark) document.documentElement.classList.add('dark');
+        else document.documentElement.classList.remove('dark');
+      })();
+    </script>
   </head>
   <body>
     <div id="app"></div>

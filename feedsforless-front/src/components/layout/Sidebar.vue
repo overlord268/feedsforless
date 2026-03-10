@@ -1,29 +1,29 @@
 <template>
   <aside
-    class="fixed md:relative left-0 top-0 bottom-0 w-72 flex-shrink-0 bg-slate-800 text-white flex flex-col border-r border-slate-700 transition-transform duration-300 ease-out z-40 md:!translate-x-0"
+    class="fixed md:relative left-0 top-0 bottom-0 w-72 flex-shrink-0 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-white flex flex-col border-r border-slate-200 dark:border-slate-700 transition-transform duration-300 ease-out z-40 md:!translate-x-0"
     :class="open ? 'translate-x-0' : '-translate-x-full'"
     :aria-hidden="!open"
   >
-    <div class="h-14 md:h-16 flex items-center justify-between px-4 md:px-5 border-b border-slate-700 shrink-0">
+    <div class="h-14 md:h-16 flex items-center justify-between px-4 md:px-5 border-b border-slate-200 dark:border-slate-700 shrink-0">
       <div class="flex items-center min-w-0">
         <div class="h-8 w-8 bg-emerald-500 rounded-lg flex items-center justify-center mr-3 shrink-0">
           <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
         </div>
-        <span class="font-bold text-lg tracking-wide truncate">FeedsFor<span class="text-emerald-400">Less</span></span>
+        <span class="font-bold text-lg tracking-wide truncate text-slate-800 dark:text-white">FeedsFor<span class="text-emerald-600 dark:text-emerald-400">Less</span></span>
       </div>
       <button
         type="button"
-        class="md:hidden p-2 -mr-2 text-slate-400 hover:text-white rounded-lg transition-colors touch-manipulation"
+        class="md:hidden p-2 -mr-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-lg transition-colors touch-manipulation"
         aria-label="Close menu"
         @click="$emit('close')"
       >
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
       </button>
     </div>
-    <div class="p-3 border-b border-slate-700 shrink-0 hidden md:block">
+    <div class="p-3 border-b border-slate-200 dark:border-slate-700 shrink-0 hidden md:block">
       <div class="relative">
         <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-        <input type="text" placeholder="Search for a product" class="w-full pl-9 pr-3 py-2 bg-slate-700/80 border border-slate-600 rounded-lg text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500" />
+        <input type="text" placeholder="Search for a product" class="w-full pl-9 pr-3 py-2 bg-slate-200/80 dark:bg-slate-700/80 border border-slate-300 dark:border-slate-600 rounded-lg text-sm text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500" />
       </div>
     </div>
 
@@ -44,8 +44,12 @@
         </div>
 
         <div>
-          <p class="px-3 text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-2">Main Catalog</p>
+          <p class="px-3 text-[11px] font-bold text-slate-500 dark:text-slate-500 uppercase tracking-widest mb-2">Main Catalog</p>
           <nav class="space-y-0.5">
+            <router-link to="/app/catalog" :class="linkClass('/app/catalog')" class="flex items-center py-3 min-h-[44px] md:py-2.5 md:min-h-0" @click="$emit('close')">
+              <svg class="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+              Browse Catalog
+            </router-link>
             <router-link to="/admin/products" :class="linkClass('/admin/products')" class="flex items-center py-3 min-h-[44px] md:py-2.5 md:min-h-0" @click="$emit('close')">
               <svg class="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
               Products
@@ -91,25 +95,18 @@
 
       <template v-else>
         <nav class="space-y-0.5">
-          <router-link to="/catalog" :class="linkClass('/catalog')" class="flex items-center py-3 min-h-[44px] md:py-2.5 md:min-h-0" @click="$emit('close')">Catalog</router-link>
+          <router-link to="/app/catalog" :class="linkClass('/app/catalog')" class="flex items-center py-3 min-h-[44px] md:py-2.5 md:min-h-0" @click="$emit('close')">Catalog</router-link>
           <router-link to="/quotes" :class="linkClass('/quotes')" class="flex items-center py-3 min-h-[44px] md:py-2.5 md:min-h-0" @click="$emit('close')">My Quotes</router-link>
           <router-link to="/addresses" :class="linkClass('/addresses')" class="flex items-center py-3 min-h-[44px] md:py-2.5 md:min-h-0" @click="$emit('close')">Addresses</router-link>
         </nav>
       </template>
-    </div>
-
-    <div class="p-3 border-t border-slate-700 shrink-0">
-      <button @click="onLogout" class="flex items-center w-full px-3 py-3 md:py-2.5 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-700 hover:text-white transition-colors gap-3 min-h-[44px] md:min-h-0 touch-manipulation">
-        <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
-        Log out
-      </button>
     </div>
   </aside>
 </template>
 
 <script setup>
 import { computed } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute } from 'vue-router';
 import { useAuthStore } from '../../stores/auth';
 
 defineProps({
@@ -118,11 +115,10 @@ defineProps({
 const emit = defineEmits(['close']);
 
 const route = useRoute();
-const router = useRouter();
 const authStore = useAuthStore();
 
 const isAdmin = computed(() => {
-  if (!authStore.user || !authStore.user.roles) return true;
+  if (!authStore.user || !authStore.user.roles) return false;
   return authStore.user.roles.some(role => role.name === 'admin');
 });
 
@@ -130,14 +126,7 @@ function linkClass(path) {
   const active = path === '/dashboard' ? route.path === path : route.path.startsWith(path);
   return [
     'flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors relative',
-    active ? 'bg-emerald-500/20 text-emerald-400 border-l-4 border-emerald-500' : 'text-slate-300 hover:bg-slate-700 hover:text-white'
+    active ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border-l-4 border-emerald-500' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white'
   ];
 }
-
-const logout = async () => {
-  emit('close');
-  await authStore.logout();
-  router.push('/login');
-};
-const onLogout = logout;
 </script>

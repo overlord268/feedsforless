@@ -34,6 +34,11 @@ export const useAuthStore = defineStore('auth', () => {
         user.value = response.data.user;
     };
 
+    const updateProfile = async (data) => {
+        const response = await api.put('/api/v1/auth/profile', data);
+        user.value = response.data.user;
+    };
+
     const logout = async () => {
         try {
             await api.post('/api/v1/auth/logout');
@@ -54,6 +59,7 @@ export const useAuthStore = defineStore('auth', () => {
         login,
         register,
         fetchUser,
+        updateProfile,
         logout
     };
 });

@@ -7,6 +7,7 @@ use App\Domains\B2B\DTOs\RegisterB2bCustomerDTO;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\Auth\RegisterB2bCustomerRequest;
 use App\Http\Requests\Api\V1\Auth\LoginRequest;
+use App\Http\Requests\Api\V1\Auth\UpdateProfileRequest;
 use App\Http\Resources\Api\V1\UserResource;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
@@ -72,7 +73,18 @@ class AuthController extends Controller
     public function me(Request $request): JsonResponse
     {
         return response()->json([
-            'user' => new UserResource($request->user()->load('roles'))
+            'user' => new UserResource($request->user()->load(['roles', 'company']))
+        ], 200);
+    }
+
+    public function updateProfile(UpdateProfileRequest $request): JsonResponse
+    {
+        $user = $request->user();
+        $data = array_filter($request->validated(), fn ($v) => $v !== null);
+        $user->update($data);
+        return response()->json([
+            'message' => 'Profile updated successfully',
+            'user' => new UserResource($user->load(['roles', 'company'])),
         ], 200);
     }
 }

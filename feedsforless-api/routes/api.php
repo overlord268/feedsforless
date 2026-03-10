@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\V1\CategoryController;
 use App\Http\Controllers\Api\V1\RfqListController;
 use App\Http\Controllers\Api\V1\QuoteRequestController;
 use App\Http\Controllers\Api\V1\AddressController;
+use App\Http\Controllers\Api\V1\ClientDashboardController;
 use App\Http\Controllers\Api\V1\Admin\AdminQuoteController;
 use App\Http\Controllers\Api\V1\Admin\AdminProductController;
 use App\Http\Controllers\Api\V1\Admin\AdminProductDocumentController;
@@ -31,14 +32,13 @@ use App\Http\Controllers\Api\V1\Admin\AdminRelatedProductController;
 use App\Http\Middleware\EnsureUserIsAdmin;
 
 Route::prefix('v1')->group(function () {
-    Route::get('/admin/dashboard/stats', [App\Http\Controllers\Api\V1\Admin\DashboardController::class, 'stats']);
-    
     Route::post('/auth/register', [AuthController::class, 'register']);
     Route::post('/auth/login', [AuthController::class, 'login']);
 
     Route::get('/catalog/categories', [CategoryController::class, 'index']);    
     Route::get('/catalog/products', [CatalogController::class, 'index']);
-    Route::get('/catalog/products/{product}', [CatalogController::class, 'show']);
+    Route::get('/catalog/products/{id}', [CatalogController::class, 'show'])->whereNumber('id');
+    Route::get('/catalog/products/{product}/documents/{type}', [CatalogController::class, 'document'])->where('type', 'tds|sds|coa');
 
     Route::post('/rfq-list/items', [RfqListController::class, 'addItem']);
     Route::get('/rfq-list', [RfqListController::class, 'show']);
@@ -48,7 +48,10 @@ Route::prefix('v1')->group(function () {
         
         Route::post('/auth/logout', [AuthController::class, 'logout']);
         Route::get('/auth/me', [AuthController::class, 'me']);
-        
+        Route::put('/auth/profile', [AuthController::class, 'updateProfile']);
+
+        Route::get('/dashboard', [ClientDashboardController::class, 'stats']);
+
         Route::apiResource('addresses', AddressController::class);
         
         Route::get('/quote-requests', [QuoteRequestController::class, 'index']);
@@ -58,6 +61,7 @@ Route::prefix('v1')->group(function () {
 
         Route::prefix('admin')->middleware(EnsureUserIsAdmin::class)->group(function () {
 
+            Route::get('dashboard/stats', [App\Http\Controllers\Api\V1\Admin\DashboardController::class, 'stats']);
             Route::get('catalogs', [AdminCatalogsController::class, 'index']);
             Route::post('products/{product}/handling-specs', [AdminProductTechnicalController::class, 'syncHandling']);
             Route::post('products/{product}/applications', [AdminProductTechnicalController::class, 'syncApplications']);
@@ -82,6 +86,7 @@ Route::prefix('v1')->group(function () {
             Route::apiResource('companies', AdminCompanyController::class);
             
             Route::get('/quote-requests', [AdminQuoteController::class, 'index']);
+            Route::get('/quote-requests/notifications', [AdminQuoteController::class, 'notifications']);
             Route::get('/quote-requests/{quoteRequest}', [AdminQuoteController::class, 'show']);
             Route::put('/quote-requests/{quoteRequest}/prices', [AdminQuoteController::class, 'updatePrices']);
             Route::put('/quote-requests/{quoteRequest}/status', [AdminQuoteController::class, 'updateStatus']);
