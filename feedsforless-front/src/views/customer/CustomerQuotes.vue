@@ -15,7 +15,7 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
           </svg>
           <span>Request basket</span>
-          <span v-if="rfqCount > 0" class="absolute -top-1.5 -right-1.5 min-w-[1.25rem] h-5 px-1 flex items-center justify-center rounded-full bg-blue-500 text-white text-xs font-bold shadow-md">
+          <span v-if="rfqCount > 0" class="absolute -top-1.5 -right-1.5 min-w-[1.25rem] h-5 px-1 flex items-center justify-center rounded-md bg-blue-500 text-white text-xs font-bold shadow-md">
             {{ rfqCount }}
           </span>
         </button>
@@ -44,7 +44,7 @@
               <div>
                 <div class="flex items-center gap-3 mb-1">
                   <h3 class="font-bold text-slate-900">Request #{{ quote.id }}</h3>
-                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold capitalize" :class="statusClass(quote.status)">
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-semibold capitalize" :class="statusClass(quote.status)">
                     {{ quote.status }}
                   </span>
                 </div>

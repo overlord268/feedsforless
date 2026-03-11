@@ -1,7 +1,7 @@
 <template>
   <div class="flex flex-col md:flex-row w-full h-full min-h-0 bg-white dark:bg-slate-900">
     <!-- Teleported Mobile Categories -->
-    <Teleport to="#mobile-catalog-categories" v-if="isMounted">
+    <Teleport to="#mobile-catalog-categories" v-if="isMounted && hasMobileCategoriesTarget">
       <div class="px-4 py-2 border-b border-slate-200 dark:border-slate-700">
         <h2 class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3">Catalog Categories</h2>
         <nav class="flex flex-col space-y-1">
@@ -191,6 +191,7 @@ const loading = ref(true);
 const selectedCategory = ref(null);
 const currentView = ref('grid');
 const isMounted = ref(false);
+const hasMobileCategoriesTarget = ref(false);
 
 const isClient = computed(() => {
   return !!authStore.token && (!authStore.user?.roles || !authStore.user.roles.some((r) => r.name === 'admin'));
@@ -282,6 +283,7 @@ const fetchProducts = async () => {
 
 onMounted(() => {
   isMounted.value = true;
+  hasMobileCategoriesTarget.value = !!document.getElementById('mobile-catalog-categories');
   fetchProducts();
 });
 

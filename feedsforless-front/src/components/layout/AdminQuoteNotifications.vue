@@ -7,7 +7,7 @@
       @click="open = !open"
     >
       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
-      <span v-if="pendingCount > 0" class="absolute top-1.5 right-1.5 min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+      <span v-if="pendingCount > 0" class="absolute top-1.5 right-1.5 min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[10px] font-bold rounded-md flex items-center justify-center">
         {{ pendingCount > 99 ? '99+' : pendingCount }}
       </span>
     </button>
@@ -35,7 +35,7 @@
                 <p class="text-sm font-semibold text-slate-800 truncate">#{{ quote.id }} · {{ quote.customer_name || quote.requester?.email || 'Customer' }}</p>
                 <p class="text-xs text-slate-500 mt-0.5">ZIP {{ quote.delivery_zip }} · {{ quote.status }}</p>
               </div>
-              <span :class="quote.status === 'pending' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-600'" class="shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded-full capitalize">{{ quote.status }}</span>
+              <span :class="quote.status === 'pending' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-600'" class="shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded-md capitalize">{{ quote.status }}</span>
             </div>
           </li>
         </ul>

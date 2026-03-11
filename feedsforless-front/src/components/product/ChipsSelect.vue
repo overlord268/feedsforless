@@ -4,10 +4,10 @@
       <span
         v-for="id in modelValue"
         :key="id"
-        class="inline-flex items-center gap-1 px-3 py-1 bg-emerald-100 text-emerald-800 text-sm font-medium rounded-full"
+        class="inline-flex items-center gap-1 px-3 py-1 bg-emerald-100 text-emerald-800 text-sm font-medium rounded-md"
       >
         {{ labelForId(id) }}
-        <button type="button" class="p-0.5 hover:bg-emerald-200 rounded-full" @click="remove(id)">×</button>
+        <button type="button" class="p-0.5 hover:bg-emerald-200 rounded-md" @click="remove(id)">×</button>
       </span>
     </div>
     <div class="relative" ref="wrapRef">

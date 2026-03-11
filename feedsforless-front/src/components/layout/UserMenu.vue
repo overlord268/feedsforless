@@ -6,7 +6,7 @@
       :class="variant === 'dark' ? 'hover:bg-white/10 text-white' : 'hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-900'"
       @click="open = !open"
     >
-      <div class="h-9 w-9 bg-emerald-500 rounded-full flex items-center justify-center text-white font-semibold text-sm shrink-0">
+      <div class="h-9 w-9 bg-emerald-500 rounded-xl flex items-center justify-center text-white font-semibold text-sm shrink-0">
         {{ userInitial }}
       </div>
       <div class="hidden sm:block text-left">
@@ -18,7 +18,7 @@
 
     <div
       v-show="open"
-      class="absolute right-0 top-full mt-1 w-64 py-2 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-xl z-[9999]"
+      class="absolute right-0 top-full mt-1 w-64 pt-2 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-xl z-[9999] overflow-hidden"
     >
       <router-link
         to="/account"

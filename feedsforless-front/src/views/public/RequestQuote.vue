@@ -1,14 +1,22 @@
 <template>
-  <div class="flex flex-col md:flex-row w-full min-h-screen bg-white">
-    <aside class="w-full md:w-60 shrink-0 border-r border-slate-200 bg-slate-50 min-h-full flex flex-col pt-6 z-10">
-      <div class="px-0 mb-8">
-        <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 px-6">Categories</h3>
+  <div class="flex flex-col md:flex-row w-full max-w-7xl mx-auto gap-8 pt-6">
+    <aside class="w-full md:w-60 shrink-0">
+      <div class="mb-8">
+        <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 px-2">Categories</h3>
         <nav class="flex flex-col space-y-0.5">
           <router-link
             :to="backToCatalogLink"
-            class="text-left px-6 py-2 text-sm font-medium transition-colors border-l-4 text-slate-600 border-transparent hover:bg-slate-200 hover:text-slate-900"
+            class="text-left px-2 py-2 text-sm font-medium transition-colors border-l-4 text-slate-600 border-transparent hover:text-slate-900"
           >
             All Commodities
+          </router-link>
+          <router-link
+            v-for="cat in allCategories"
+            :key="cat.id"
+            :to="{ name: backToCatalogLink.name, query: { categoryId: cat.id } }"
+            class="text-left px-2 py-2 text-sm font-medium transition-colors border-l-4 text-slate-600 border-transparent hover:text-slate-900"
+          >
+            {{ cat.label }}
           </router-link>
         </nav>
       </div>
@@ -60,7 +68,7 @@
           &larr; Back to {{ submittedProductName || 'Catalog' }}
         </router-link>
         <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-8 md:p-10 text-center">
-          <div class="w-14 h-14 bg-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4">
+          <div class="w-14 h-14 bg-emerald-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
             <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
           </div>
           <h2 class="text-xl font-black text-emerald-800 uppercase tracking-tight mb-3">Request Transmitted</h2>
@@ -114,7 +122,7 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
             <div>
               <h3 class="flex items-center gap-2 text-[11px] font-black text-slate-900 uppercase tracking-widest mb-4 border-b-2 border-slate-900 pb-2">
-                <span class="bg-slate-900 text-white w-4 h-4 rounded-full flex items-center justify-center text-[9px]">1</span>
+                <span class="bg-slate-900 text-white w-4 h-4 rounded-md flex items-center justify-center text-[9px]">1</span>
                 Corporate Entity Profile
               </h3>
               <div class="space-y-4">
@@ -145,7 +153,7 @@
 
             <div>
               <h3 class="flex items-center gap-2 text-[11px] font-black text-slate-900 uppercase tracking-widest mb-4 border-b-2 border-slate-900 pb-2">
-                <span class="bg-slate-900 text-white w-4 h-4 rounded-full flex items-center justify-center text-[9px]">2</span>
+                <span class="bg-slate-900 text-white w-4 h-4 rounded-md flex items-center justify-center text-[9px]">2</span>
                 Supply Chain & Logistics
               </h3>
               <div class="space-y-4">
@@ -197,8 +205,9 @@
               <router-link :to="backToCatalogLink" class="min-h-[44px] min-w-[44px] inline-flex items-center justify-center text-[11px] font-bold text-slate-500 uppercase tracking-wider hover:text-slate-800 transition-colors touch-manipulation">Cancel</router-link>
               <button
                 type="button"
-                :disabled="!isLoggedIn || submitting"
+                :disabled="!isLoggedIn || isAdmin || submitting"
                 @click="submitQuote"
+                :title="isAdmin ? 'Administrators cannot submit quote requests.' : ''"
                 class="min-h-[44px] px-8 py-3.5 bg-[#2962ff] text-white font-bold text-[11px] uppercase tracking-wider hover:bg-blue-800 transition-colors disabled:opacity-60 disabled:cursor-not-allowed touch-manipulation"
               >
                 {{ submitting ? 'Sending…' : 'Verify & Send RFQ' }}
@@ -237,6 +246,9 @@ const submittedEmail = ref('');
 const rfqId = ref('RFQ' + Math.random().toString(36).slice(2, 10).toUpperCase());
 
 const isLoggedIn = computed(() => !!authStore.token);
+const isAdmin = computed(() => {
+  return !!authStore.token && authStore.user?.roles && authStore.user.roles.some((r) => r.name === 'admin');
+});
 
 const form = reactive({
   legal_name: '',
@@ -260,6 +272,26 @@ const backToCatalogLink = computed(() => {
   const inApp = route.path.startsWith('/app');
   return { name: inApp ? 'AppCatalog' : 'Catalog', query: product.value ? {} : {} };
 });
+
+const allProducts = ref([]);
+const allCategories = computed(() => {
+  const map = new Map();
+  allProducts.value.forEach(p => {
+    (p.categories || []).forEach(c => {
+      if (!map.has(c.id)) map.set(c.id, c);
+    });
+  });
+  return Array.from(map.values()).sort((a, b) => a.label.localeCompare(b.label));
+});
+
+const fetchAllProducts = async () => {
+  try {
+    const { data } = await api.get('/api/v1/catalog/products');
+    allProducts.value = data?.data ?? data;
+  } catch (e) {
+    console.error('Failed to load categories', e);
+  }
+};
 
 const returnToPortalLink = computed(() => {
   if (route.path.startsWith('/app')) {
@@ -297,6 +329,7 @@ async function fetchProduct() {
 
 watch(() => props.productId, fetchProduct, { immediate: true });
 onMounted(() => {
+  fetchAllProducts();
   if (authStore.user) {
     form.legal_name = authStore.user.company_name || form.legal_name;
     form.contact_name = form.contact_name || [authStore.user.first_name, authStore.user.last_name].filter(Boolean).join(' ') || authStore.user.name || '';
@@ -306,7 +339,7 @@ onMounted(() => {
 });
 
 async function submitQuote() {
-  if (!isLoggedIn.value || !product.value) return;
+  if (!isLoggedIn.value || isAdmin.value || !product.value) return;
   if (!form.quantity || form.quantity < 1) {
     toast.error('Enter a valid request volume.');
     return;

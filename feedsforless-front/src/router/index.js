@@ -3,21 +3,21 @@ import { useAuthStore } from '../stores/auth';
 
 const routes = [
     {
-        path: '/login',
-        name: 'Login',
-        component: () => import('../views/Login.vue'),
-        meta: { requiresGuest: true }
-    },
-    {
-        path: '/register',
-        name: 'Register',
-        component: () => import('../views/Register.vue'),
-        meta: { requiresGuest: true }
-    },
-    {
         path: '/',
         component: () => import('../layouts/PublicLayout.vue'),
         children: [
+            {
+                path: 'login',
+                name: 'Login',
+                component: () => import('../views/Login.vue'),
+                meta: { requiresGuest: true }
+            },
+            {
+                path: 'register',
+                name: 'Register',
+                component: () => import('../views/Register.vue'),
+                meta: { requiresGuest: true }
+            },
             {
                 path: '',
                 name: 'PublicHome',

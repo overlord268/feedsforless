@@ -3,7 +3,7 @@
     <div class="fixed inset-0 z-30 bg-black/50 transition-opacity md:hidden" :class="sidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'" aria-hidden="true" @click="sidebarOpen = false"></div>
     <Sidebar :open="isDesktop || sidebarOpen" @close="sidebarOpen = false" />
     <div class="flex-1 flex flex-col min-w-0 overflow-hidden min-h-screen">
-      <header class="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 h-14 flex items-center justify-between gap-3 px-3 sm:px-4 md:px-5 lg:px-8 shrink-0 shadow-sm z-10 w-full">
+      <header class="relative z-50 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 h-14 flex items-center justify-between gap-3 px-3 sm:px-4 md:px-5 lg:px-8 shrink-0 shadow-sm w-full">
         <button type="button" class="md:hidden p-2 -ml-1 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg touch-manipulation shrink-0" aria-label="Open menu" @click="sidebarOpen = true">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
         </button>

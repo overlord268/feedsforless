@@ -24,7 +24,7 @@
               <td class="px-6 py-4 text-slate-800">{{ quote.customer_name || quote.requester?.email || '—' }}</td>
               <td class="px-6 py-4 text-slate-600">{{ quote.delivery_zip }}</td>
               <td class="px-6 py-4">
-                <span :class="statusClass(quote.status)" class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-semibold capitalize">
+                <span :class="statusClass(quote.status)" class="inline-flex px-2.5 py-0.5 rounded-md text-xs font-semibold capitalize">
                   {{ quote.status }}
                 </span>
               </td>
