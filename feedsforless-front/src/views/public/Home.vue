@@ -1,5 +1,5 @@
 <template>
-  <div class="flex-1 flex flex-col md:flex-row w-full min-w-0 bg-white">
+  <div class="flex-1 flex flex-col md:flex-row w-full h-full min-w-0 bg-white">
     <!-- Sidebar: Browse by Category -->
     <aside class="w-full md:w-60 shrink-0 border-r border-slate-200 bg-slate-50/80 min-h-full flex flex-col pt-6 pb-8">
       <h2 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 px-6">Browse by Category</h2>
@@ -41,8 +41,8 @@
 
     <!-- Main product area -->
     <main class="flex-1 min-w-0 p-6 lg:p-10">
-      <div v-if="loading" class="flex items-center justify-center py-20">
-        <svg class="animate-spin h-10 w-10 text-[#2962ff]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+      <div v-if="loading" class="flex items-center justify-center py-20 animate-in fade-in duration-200">
+        <LoadingSpinner size="lg" label="Loading catalog…" />
       </div>
 
       <div v-else-if="filteredGroupedProducts.length === 0" class="text-center py-20 bg-slate-50 border border-slate-200 rounded-xl">
@@ -86,11 +86,11 @@
                   <span v-if="product.stock_status" class="text-slate-500">{{ formatStockStatus(product.stock_status) }}</span>
                 </div>
               </div>
-              <!-- Request Quote on hover - no redirect to login, goes to RFQ page -->
-              <div class="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-white to-white/95 opacity-0 group-hover:opacity-100 transition-opacity flex justify-end">
+              <!-- Request Quote: always visible on mobile (touch), hover-reveal on desktop -->
+              <div class="mt-3 pt-3 border-t border-slate-100 md:absolute md:bottom-0 md:left-0 md:right-0 md:mt-0 md:pt-0 md:border-t-0 md:p-4 md:bg-gradient-to-t md:from-white md:to-white/95 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex justify-end">
                 <router-link
                   :to="{ name: 'RequestQuote', query: { productId: product.id } }"
-                  class="inline-block bg-[#2962ff] text-white text-[10px] font-bold uppercase tracking-wider px-4 py-2 rounded-lg hover:bg-[#1a4fc4] transition-colors"
+                  class="inline-block min-h-[44px] min-w-[44px] flex items-center justify-center bg-[#2962ff] text-white text-[10px] font-bold uppercase tracking-wider px-4 py-2.5 rounded-lg hover:bg-[#1a4fc4] transition-colors touch-manipulation"
                   @click.stop
                 >
                   Request Quote
@@ -108,6 +108,7 @@
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import api from '../../services/api';
+import LoadingSpinner from '../../components/ui/LoadingSpinner.vue';
 
 const props = defineProps({
   searchQuery: {

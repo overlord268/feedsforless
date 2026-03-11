@@ -1,17 +1,28 @@
 <template>
-  <div class="min-h-screen bg-white dark:bg-slate-900 font-sans text-slate-900 dark:text-slate-100 w-full flex flex-col">
-    <header class="bg-[#003366] sticky top-0 z-40 w-full shadow-md">
-      <div class="w-full px-4 lg:px-6 py-3 flex items-center justify-between gap-6">
-        <router-link to="/" class="flex items-center gap-3 shrink-0">
-          <div class="bg-white text-[#003366] font-black italic text-xl px-2 py-0.5 leading-none tracking-tighter">
-            FFL
-          </div>
-          <div class="text-white font-black text-xl tracking-wide">
-            FEEDSFORLESS
-          </div>
-        </router-link>
+  <div class="h-screen bg-white dark:bg-slate-900 font-sans text-slate-900 dark:text-slate-100 w-full flex flex-col overflow-hidden">
+    <!-- Header -->
+    <header class="bg-[#003366] dark:bg-slate-800 sticky top-0 z-40 w-full shadow-md">
+      <div class="w-full px-4 lg:px-6 py-3 flex items-center justify-between gap-4 md:gap-6">
+        
+        <div class="flex items-center gap-2 md:gap-3 shrink-0">
+          <!-- Mobile Menu Toggle (Left) -->
+          <button @click="isMobileMenuOpen = true" class="md:hidden p-2 -ml-2 text-white hover:bg-white/10 rounded transition-colors">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+          </button>
+          
+          <!-- Logo -->
+          <router-link to="/" class="flex items-center gap-2 md:gap-3 shrink-0">
+            <div class="bg-white text-[#003366] font-black italic text-lg md:text-xl px-2 py-0.5 leading-none tracking-tighter">
+              FFL
+            </div>
+            <div class="text-white font-black text-lg md:text-xl tracking-wide hidden sm:block">
+              FEEDSFORLESS
+            </div>
+          </router-link>
+        </div>
 
-        <div class="flex-1 w-full max-w-4xl mx-auto">
+        <!-- Desktop Search -->
+        <div class="flex-1 w-full max-w-4xl mx-auto hidden md:block">
           <div class="relative flex items-center w-full">
             <svg class="w-5 h-5 text-slate-400 absolute left-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
             <input 
@@ -19,44 +30,115 @@
               @keyup.enter="performSearch"
               type="text" 
               placeholder="Search commodities, grades, or SDS..." 
-              class="w-full pl-10 pr-4 py-2 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 placeholder-slate-500 text-slate-800 font-medium"
+              class="w-full pl-10 pr-4 py-2 bg-white/10 dark:bg-slate-900/50 border border-transparent dark:border-slate-700 text-white placeholder-blue-200 dark:placeholder-slate-400 text-sm focus:outline-none focus:bg-white focus:text-slate-900 focus:placeholder-slate-500 dark:focus:bg-slate-800 dark:focus:text-white rounded transition-colors font-medium"
             />
           </div>
         </div>
 
-        <div class="flex items-center gap-6 shrink-0 text-white">
-          <router-link to="/catalog" class="text-[11px] font-bold uppercase tracking-wider hover:text-blue-200 transition-colors">Catalog</router-link>
-          <a href="#" class="text-[11px] font-bold uppercase tracking-wider hover:text-blue-200 transition-colors">Track Freight</a>
-          <UserMenu v-if="isLoggedIn" variant="dark" />
+        <div class="flex items-center gap-4 md:gap-6 shrink-0 text-white ml-auto">
+          <!-- Desktop navigation -->
+          <div class="hidden md:flex items-center gap-6">
+            <template v-if="isLoggedIn">
+              <a href="#" class="text-[11px] font-bold uppercase tracking-wider hover:text-blue-200 transition-colors">Track Freight</a>
+              <router-link to="/quotes" class="bg-white dark:bg-slate-700 text-[#003366] dark:text-white text-[11px] font-bold uppercase tracking-wider px-4 py-2 hover:bg-slate-100 dark:hover:bg-slate-600 rounded transition-colors">Quick Order</router-link>
+            </template>
+            <template v-else>
+              <router-link to="/register" class="text-[11px] font-bold uppercase tracking-wider hover:text-blue-200 transition-colors">Sign Up</router-link>
+            </template>
+          </div>
+          
+          <!-- Always visible User/Login Controls (Desktop & Mobile) -->
+          <template v-if="isLoggedIn">
+            <UserMenu variant="dark" />
+          </template>
           <template v-else>
-            <router-link to="/login" class="text-[11px] font-bold uppercase tracking-wider hover:text-blue-200 transition-colors">My Account</router-link>
-            <a href="#" class="bg-white text-[#003366] text-[11px] font-bold uppercase tracking-wider px-4 py-2 hover:bg-slate-100 transition-colors">Quick Order</a>
+            <router-link to="/login" class="text-[11px] font-bold uppercase tracking-wider hover:text-blue-200 transition-colors">Login</router-link>
           </template>
         </div>
       </div>
       <div class="w-full h-1 bg-green-700"></div>
     </header>
 
-    <main class="flex-1 w-full flex flex-col pt-0">
+    <!-- Base view -->
+    <main class="flex-1 w-full flex flex-col pt-0 overflow-y-auto overflow-x-hidden min-h-0 bg-white dark:bg-slate-900">
       <router-view :search-query="debouncedSearch"></router-view>
     </main>
 
-    <footer class="bg-[#0b1320] text-slate-300 py-8 text-sm w-full mt-auto">
+    <!-- Mobile Menu Overlay -->
+    <div v-show="isMobileMenuOpen" class="fixed inset-0 z-50 md:hidden flex" aria-modal="true" role="dialog">
+      <!-- Backdrop -->
+      <div 
+        class="fixed inset-0 bg-black/50 dark:bg-black/70 transition-opacity" 
+        @click="isMobileMenuOpen = false"
+        aria-hidden="true"
+      ></div>
+
+      <!-- Slide-over panel -->
+      <div
+        class="relative flex w-full max-w-xs flex-col bg-white dark:bg-slate-800 h-full shadow-xl transition-transform transform"
+        :class="isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'"
+      >
+        <div class="flex items-center justify-between px-4 pt-5 pb-2">
+          <div class="flex items-center gap-2">
+            <div class="bg-[#003366] dark:bg-slate-700 text-white font-black italic text-lg px-2 py-0.5 leading-none tracking-tighter">FFL</div>
+            <div class="text-[#003366] dark:text-white font-black text-lg tracking-wide">MENU</div>
+          </div>
+          <button type="button" @click="isMobileMenuOpen = false" class="-m-2 p-2 text-slate-400 hover:text-slate-500 dark:hover:text-slate-300">
+            <span class="sr-only">Close menu</span>
+            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
+        </div>
+
+        <!-- Mobile Search -->
+        <div class="px-4 mt-4 mb-2">
+          <div class="relative flex items-center w-full">
+            <svg class="w-5 h-5 text-slate-400 absolute left-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            <input 
+              v-model="searchQuery"
+              @keyup.enter="performSearch(); isMobileMenuOpen = false"
+              type="text" 
+              placeholder="Search..." 
+              class="w-full pl-10 pr-4 py-2.5 bg-slate-100 dark:bg-slate-700 border-none text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-blue-500 placeholder-slate-500 dark:placeholder-slate-400 text-slate-900 dark:text-white font-medium rounded-lg"
+            />
+          </div>
+        </div>
+
+        <!-- Teleport target for Catalog Categories -->
+        <div id="mobile-catalog-categories"></div>
+
+        <div class="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+          <template v-if="isLoggedIn">
+            <div class="flex flex-col gap-3">
+              <router-link to="/quotes" @click="isMobileMenuOpen = false" class="block w-full text-center bg-[#003366] dark:bg-blue-600 text-white text-[12px] font-bold uppercase tracking-wider px-4 py-3 rounded-lg">Quick Order</router-link>
+              <a href="#" class="block w-full text-center border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 text-[12px] font-bold uppercase tracking-wider px-4 py-3 rounded-lg">Track Freight</a>
+            </div>
+          </template>
+          <template v-else>
+            <div class="flex flex-col gap-3">
+              <router-link to="/register" @click="isMobileMenuOpen = false" class="block w-full text-center border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 text-[12px] font-bold uppercase tracking-wider px-4 py-3 rounded-lg">Sign Up</router-link>
+            </div>
+          </template>
+        </div>
+      </div>
+    </div>
+
+    <footer class="bg-[#0b1320] text-slate-300 py-6 md:py-8 text-sm w-full shrink-0">
       <div class="w-full px-4 lg:px-12 max-w-screen-2xl mx-auto">
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <div class="pr-8">
-            <div class="bg-white text-[#003366] font-black italic text-2xl px-3 py-1 leading-none tracking-tighter inline-block mb-2">
+        <!-- Main Footer Links Grid -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-6 md:gap-6">
+          <div class="col-span-2 md:col-span-1 pr-4 md:pr-8 mb-2 md:mb-0">
+            <div class="bg-white text-[#003366] font-black italic text-xl md:text-2xl px-3 py-1 leading-none tracking-tighter inline-block mb-2">
               FFL
             </div>
-            <h4 class="text-white font-bold text-xs uppercase tracking-widest mb-3">FeedsForLess Industrial</h4>
-            <p class="text-slate-400 text-xs leading-relaxed">
+            <h4 class="text-white font-bold text-xs uppercase tracking-widest mb-2 md:mb-3">FeedsForLess Industrial</h4>
+            <p class="text-slate-400 text-[11px] md:text-xs leading-relaxed max-w-md">
               Providing high-efficiency procurement for commercial livestock, poultry, and specialty feed manufacturers across North America.
             </p>
           </div>
           
           <div>
-            <h5 class="text-white font-bold text-xs uppercase tracking-widest mb-4">Company</h5>
-            <ul class="space-y-3 text-slate-400 text-xs">
+            <h5 class="text-white font-bold text-[10px] md:text-xs uppercase tracking-widest mb-3 md:mb-4">Company</h5>
+            <ul class="space-y-2 md:space-y-3 text-slate-400 text-xs">
               <li><a href="#" class="hover:text-white transition-colors">About Us</a></li>
               <li><a href="#" class="hover:text-white transition-colors">Resource Center</a></li>
               <li><a href="#" class="hover:text-white transition-colors">Sustainability</a></li>
@@ -65,8 +147,8 @@
           </div>
           
           <div>
-            <h5 class="text-white font-bold text-xs uppercase tracking-widest mb-4">Support</h5>
-            <ul class="space-y-3 text-slate-400 text-xs">
+            <h5 class="text-white font-bold text-[10px] md:text-xs uppercase tracking-widest mb-3 md:mb-4">Support</h5>
+            <ul class="space-y-2 md:space-y-3 text-slate-400 text-xs">
               <li><a href="#" class="hover:text-white transition-colors">Safety Data Sheets</a></li>
               <li><a href="#" class="hover:text-white transition-colors">Technical Standards</a></li>
               <li><a href="#" class="hover:text-white transition-colors">Terms of Sale</a></li>
@@ -74,12 +156,12 @@
             </ul>
           </div>
           
-          <div>
-            <h5 class="text-white font-bold text-xs uppercase tracking-widest mb-4">Compliance</h5>
+          <div class="col-span-2 md:col-span-1 mt-2 md:mt-0 pt-4 md:pt-0 border-t border-slate-700/50 md:border-0">
+            <h5 class="text-white font-bold text-[10px] md:text-xs uppercase tracking-widest mb-2 md:mb-4">Compliance</h5>
             <p class="text-slate-400 text-xs leading-relaxed mb-2">
               ISO 9001:2015 Certified Logistics & Distribution
             </p>
-            <p class="text-slate-500 text-xs">
+            <p class="text-slate-500 text-[10px] md:text-xs">
               © 2026 FeedsForLess LLC.
             </p>
           </div>
@@ -90,7 +172,7 @@
 </template>
 
 <script setup>
-import { ref, watch, computed } from 'vue';
+import { ref, watch, computed, onMounted, onUnmounted } from 'vue';
 import { useAuthStore } from '../stores/auth';
 import UserMenu from '../components/layout/UserMenu.vue';
 
@@ -98,6 +180,17 @@ const authStore = useAuthStore();
 const isLoggedIn = computed(() => !!authStore.token);
 const searchQuery = ref('');
 const debouncedSearch = ref('');
+const isMobileMenuOpen = ref(false);
+
+const closeMobileMenu = () => { isMobileMenuOpen.value = false; };
+
+onMounted(() => {
+  window.addEventListener('close-mobile-menu', closeMobileMenu);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('close-mobile-menu', closeMobileMenu);
+});
 
 let debounceTimer = null;
 watch(searchQuery, (val) => {

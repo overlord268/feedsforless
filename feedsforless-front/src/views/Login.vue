@@ -2,15 +2,15 @@
   <main class="min-h-screen flex items-center justify-center p-4 bg-slate-100">
     <div class="w-full max-w-md">
       <div class="flex items-center justify-center gap-3 mb-8">
-        <div class="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center text-white">
+        <div class="w-10 h-10 bg-[#2962ff] rounded-xl flex items-center justify-center text-white">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
         </div>
-        <span class="font-bold text-xl text-slate-800">FeedsFor<span class="text-emerald-500">Less</span></span>
+        <span class="font-black italic text-xl text-[#003366]">FEEDSFOR<span class="text-[#2962ff]">LESS</span></span>
       </div>
       <div class="bg-white p-8 rounded-2xl border border-slate-200/80 shadow-card">
         <div class="text-center mb-8">
-          <h1 class="text-2xl font-bold tracking-tight text-slate-900">Sign in</h1>
-          <p class="text-slate-500 mt-1 text-sm">Access your B2B portal</p>
+          <h1 class="text-3xl font-black italic uppercase text-[#003366] tracking-tight">Sign in</h1>
+          <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2 border-b-2 border-slate-900/10 pb-4 inline-block">Access your B2B portal</p>
         </div>
 
         <form class="space-y-5" @submit.prevent="handleSubmit">
@@ -22,8 +22,8 @@
               type="email"
               required
               autocomplete="email"
-              class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 transition-all"
-              placeholder="tu@email.com"
+              class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-[#2962ff]/30 focus:border-[#2962ff] transition-all"
+              placeholder="you@example.com"
             />
           </div>
           <div>
@@ -34,7 +34,7 @@
               type="password"
               required
               autocomplete="current-password"
-              class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 transition-all"
+              class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-[#2962ff]/30 focus:border-[#2962ff] transition-all"
               placeholder="••••••••"
             />
           </div>
@@ -44,15 +44,15 @@
           <button
             type="submit"
             :disabled="isLoading"
-            class="w-full min-h-[48px] py-3 bg-emerald-600 text-white font-medium rounded-xl hover:bg-emerald-700 transition-colors shadow-sm shadow-emerald-500/20 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 touch-manipulation"
+            class="w-full min-h-[48px] py-3 bg-[#2962ff] text-white font-bold text-[11px] uppercase tracking-wider rounded-xl hover:bg-blue-800 transition-colors shadow-sm shadow-blue-500/20 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 touch-manipulation"
           >
             <svg v-if="isLoading" class="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
             <span>{{ isLoading ? 'Signing in…' : 'Sign in' }}</span>
           </button>
         </form>
 
-        <p class="text-center text-sm text-slate-500 mt-6">
-          Don't have an account? <router-link to="/register" class="text-emerald-600 font-medium hover:underline">Register</router-link>
+        <p class="text-center text-sm text-slate-500 mt-6 font-medium">
+          Don't have an account? <router-link to="/register" class="text-[#2962ff] font-bold hover:underline ml-1">Register</router-link>
         </p>
       </div>
     </div>

@@ -23,6 +23,12 @@ class QuoteRequestResource extends JsonResource
                 'email' => $this->requester->email,
                 'first_name' => $this->requester->first_name,
                 'last_name' => $this->requester->last_name,
+                'phone' => $this->requester->phone,
+                'job_title' => $this->requester->job_title,
+                'company_name' => $this->requester->relationLoaded('company') && $this->requester->company 
+                    ? $this->requester->company->name : null,
+                'tax_id' => $this->requester->relationLoaded('company') && $this->requester->company 
+                    ? $this->requester->company->tax_registration_number : null,
             ]),
             'items' => QuoteRequestItemResource::collection($this->whenLoaded('items')),
         ];

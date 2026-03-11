@@ -42,7 +42,7 @@ class AdminQuoteController extends Controller
 
     public function show(QuoteRequest $quoteRequest): QuoteRequestResource
     {
-        $quoteRequest->load(['items.product', 'items.packagingType']);
+        $quoteRequest->load(['items.product', 'items.packagingType', 'requester.company']);
         
         return new QuoteRequestResource($quoteRequest);
     }

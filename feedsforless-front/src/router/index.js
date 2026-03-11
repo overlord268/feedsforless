@@ -36,6 +36,24 @@ const routes = [
                     const id = route.query.productId ? Number(route.query.productId) : null;
                     return { productId: id != null && !Number.isNaN(id) ? id : null };
                 }
+            },
+            {
+                path: 'account',
+                name: 'Account',
+                component: () => import('../views/Account.vue'),
+                meta: { requiresAuth: true }
+            },
+            {
+                path: 'addresses',
+                name: 'CustomerAddresses',
+                component: () => import('../views/customer/CustomerAddresses.vue'),
+                meta: { requiresAuth: true }
+            },
+            {
+                path: 'quotes',
+                name: 'CustomerQuotes',
+                component: () => import('../views/customer/CustomerQuotes.vue'),
+                meta: { requiresAuth: true }
             }
         ]
     },
@@ -63,14 +81,10 @@ const routes = [
                 }
             },
             {
-                path: 'account',
-                name: 'Account',
-                component: () => import('../views/Account.vue')
-            },
-            {
                 path: 'dashboard',
                 name: 'Dashboard',
-                component: () => import('../views/Dashboard.vue')
+                component: () => import('../views/Dashboard.vue'),
+                meta: { requiresAdmin: true }
             },
             {
                 path: 'admin/products',
@@ -100,6 +114,12 @@ const routes = [
                 path: 'admin/quotes',
                 name: 'AdminQuotes',
                 component: () => import('../views/admin/AdminQuotes.vue'),
+                meta: { requiresAdmin: true }
+            },
+            {
+                path: 'admin/quotes/:id',
+                name: 'AdminQuoteDetails',
+                component: () => import('../views/admin/AdminQuoteDetails.vue'),
                 meta: { requiresAdmin: true }
             },
             {
@@ -161,22 +181,12 @@ const routes = [
                 name: 'AdminTestMethods',
                 component: () => import('../views/admin/AdminTestMethods.vue'),
                 meta: { requiresAdmin: true }
-            },
-            {
-                path: 'addresses',
-                name: 'CustomerAddresses',
-                component: () => import('../views/customer/CustomerAddresses.vue')
-            },
-            {
-                path: 'quotes',
-                name: 'CustomerQuotes',
-                component: () => import('../views/customer/CustomerQuotes.vue')
             }
         ]
     },
     {
         path: '/:pathMatch(.*)*',
-        redirect: '/dashboard'
+        redirect: '/'
     }
 ];
 
@@ -200,37 +210,40 @@ router.beforeEach(async (to, from) => {
     const isAuthenticated = !!authStore.token;
 
     if (to.meta.requiresAuth && !isAuthenticated) {
-        return { name: 'Login' };
+        return { path: '/', query: to.query };
     }
 
     if (to.meta.requiresGuest && isAuthenticated) {
-        return { name: 'Dashboard' };
+        if (userIsAdmin(authStore)) {
+            return { name: 'Dashboard' };
+        }
+        return { name: 'Catalog' };
     }
 
-    // Rutas de administrador: solo usuarios con rol admin
+    // Admin routes: only users with admin role
     if (isAuthenticated && isAdminRoute(to)) {
         if (!authStore.user && authStore.token) {
             try {
                 await authStore.fetchUser();
             } catch {
-                return { name: 'Login' };
+                return { path: '/' };
             }
         }
         if (!userIsAdmin(authStore)) {
-            return { name: 'Dashboard' };
+            return { name: 'Catalog' };
         }
     }
 
-    // Logueado: catálogo público → usar diseño app (/app/catalog)
-    if (isAuthenticated && (to.name === 'PublicHome' || to.name === 'Catalog' || to.name === 'RequestQuote')) {
+    // Logged in as ADMIN: public catalog → use app layout (/app/catalog)
+    if (isAuthenticated && userIsAdmin(authStore) && (to.name === 'PublicHome' || to.name === 'Catalog' || to.name === 'RequestQuote')) {
         if (to.name === 'RequestQuote') {
             return { name: 'AppRequestQuote', query: to.query };
         }
         return { name: 'AppCatalog', query: to.query };
     }
 
-    // No logueado: si entra a /app/catalog, redirigir al catálogo público
-    if (!isAuthenticated && to.path.startsWith('/app')) {
+    // Not logged in or regular user: if accessing /app/catalog, redirect to public catalog
+    if (to.path.startsWith('/app') && (!isAuthenticated || !userIsAdmin(authStore))) {
         const path = to.path.replace(/^\/app/, '') || '/';
         return { path, query: to.query };
     }

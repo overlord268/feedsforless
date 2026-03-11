@@ -12,7 +12,7 @@
           </router-link>
         </nav>
       </div>
-      <div class="px-6 mb-8 mt-4 border-t border-slate-200 pt-6">
+      <!-- <div class="px-6 mb-8 mt-4 border-t border-slate-200 pt-6">
         <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Resources</h3>
         <nav class="flex flex-col space-y-3 text-sm font-bold text-[#2962ff]">
           <a href="#" class="hover:underline">Logistics Map</a>
@@ -20,7 +20,7 @@
           <a href="#" class="hover:underline">Tax Exemption Forms</a>
           <a href="#" class="hover:underline">Supplier Compliance</a>
         </nav>
-      </div>
+      </div> -->
     </aside>
 
     <main class="flex-1 w-full bg-white relative p-6 lg:p-10">
@@ -40,7 +40,9 @@
         </router-link>
       </div>
 
-      <div v-else-if="loadingProduct" class="py-12 text-center text-slate-500">Loading product…</div>
+      <div v-else-if="loadingProduct" class="py-12">
+        <PageLoader message="Loading product…" />
+      </div>
 
       <div v-else-if="!product" class="max-w-2xl">
         <p class="text-slate-600 mb-4">Product not found.</p>
@@ -118,25 +120,25 @@
               <div class="space-y-4">
                 <div>
                   <label class="block text-[10px] font-bold text-slate-600 uppercase tracking-widest mb-1.5">Legal Business Name*</label>
-                  <input v-model="form.legal_name" type="text" class="w-full border border-slate-300 bg-slate-50 px-3 py-2 text-sm focus:outline-none focus:border-[#2962ff] text-slate-800 font-medium" />
+                  <input v-model="form.legal_name" type="text" class="w-full min-h-[44px] border border-slate-300 bg-slate-50 px-3 py-2 text-sm focus:outline-none focus:border-[#2962ff] text-slate-800 font-medium touch-manipulation" />
                 </div>
                 <div>
                   <label class="block text-[10px] font-bold text-slate-600 uppercase tracking-widest mb-1.5">Authorized Procurement Contact*</label>
-                  <input v-model="form.contact_name" type="text" class="w-full border border-slate-300 bg-slate-50 px-3 py-2 text-sm focus:outline-none focus:border-[#2962ff] text-slate-800 font-medium" />
+                  <input v-model="form.contact_name" type="text" class="w-full min-h-[44px] border border-slate-300 bg-slate-50 px-3 py-2 text-sm focus:outline-none focus:border-[#2962ff] text-slate-800 font-medium touch-manipulation" />
                 </div>
-                <div class="grid grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label class="block text-[10px] font-bold text-slate-600 uppercase tracking-widest mb-1.5">Business Email*</label>
-                    <input v-model="form.email" type="email" class="w-full border border-slate-300 bg-slate-50 px-3 py-2 text-sm focus:outline-none focus:border-[#2962ff] text-slate-800 font-medium" />
+                    <input v-model="form.email" type="email" class="w-full min-h-[44px] border border-slate-300 bg-slate-50 px-3 py-2 text-sm focus:outline-none focus:border-[#2962ff] text-slate-800 font-medium touch-manipulation" />
                   </div>
                   <div>
                     <label class="block text-[10px] font-bold text-slate-600 uppercase tracking-widest mb-1.5">Primary Phone*</label>
-                    <input v-model="form.phone" type="tel" class="w-full border border-slate-300 bg-slate-50 px-3 py-2 text-sm focus:outline-none focus:border-[#2962ff] text-slate-800 font-medium" />
+                    <input v-model="form.phone" type="tel" class="w-full min-h-[44px] border border-slate-300 bg-slate-50 px-3 py-2 text-sm focus:outline-none focus:border-[#2962ff] text-slate-800 font-medium touch-manipulation" />
                   </div>
                 </div>
                 <div>
                   <label class="block text-[10px] font-bold text-slate-600 uppercase tracking-widest mb-1.5">Sales Tax ID / Exemption Certificate</label>
-                  <input v-model="form.tax_id" type="text" class="w-full border border-slate-300 bg-slate-50 px-3 py-2 text-sm focus:outline-none focus:border-[#2962ff] text-slate-800 font-medium" />
+                  <input v-model="form.tax_id" type="text" class="w-full min-h-[44px] border border-slate-300 bg-slate-50 px-3 py-2 text-sm focus:outline-none focus:border-[#2962ff] text-slate-800 font-medium touch-manipulation" />
                 </div>
               </div>
             </div>
@@ -147,14 +149,14 @@
                 Supply Chain & Logistics
               </h3>
               <div class="space-y-4">
-                <div class="grid grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label class="block text-[10px] font-bold text-slate-600 uppercase tracking-widest mb-1.5">Request Volume*</label>
-                    <input v-model.number="form.quantity" type="number" min="1" class="w-full border border-slate-300 bg-slate-50 px-3 py-2 text-sm focus:outline-none focus:border-[#2962ff] text-slate-800 font-medium" />
+                    <input v-model.number="form.quantity" type="number" min="1" class="w-full min-h-[44px] border border-slate-300 bg-slate-50 px-3 py-2 text-sm focus:outline-none focus:border-[#2962ff] text-slate-800 font-medium touch-manipulation" />
                   </div>
                   <div>
                     <label class="block text-[10px] font-bold text-slate-600 uppercase tracking-widest mb-1.5">Logistics Unit*</label>
-                    <select v-model.number="form.packaging_type_id" class="w-full border border-slate-300 bg-slate-50 px-3 py-2 text-sm focus:outline-none focus:border-[#2962ff] text-slate-800 font-medium">
+                    <select v-model.number="form.packaging_type_id" class="w-full min-h-[44px] border border-slate-300 bg-slate-50 px-3 py-2 text-sm focus:outline-none focus:border-[#2962ff] text-slate-800 font-medium touch-manipulation">
                       <option v-for="opt in packagingOptions" :key="opt.packaging_type_id" :value="opt.packaging_type_id">
                         {{ opt.type_name }}
                       </option>
@@ -164,11 +166,11 @@
                 </div>
                 <div>
                   <label class="block text-[10px] font-bold text-slate-600 uppercase tracking-widest mb-1.5">Destination Address*</label>
-                  <input v-model="form.destination_address" type="text" class="w-full border border-slate-300 bg-slate-50 px-3 py-2 text-sm focus:outline-none focus:border-[#2962ff] text-slate-800 font-medium" />
+                  <input v-model="form.destination_address" type="text" class="w-full min-h-[44px] border border-slate-300 bg-slate-50 px-3 py-2 text-sm focus:outline-none focus:border-[#2962ff] text-slate-800 font-medium touch-manipulation" />
                 </div>
                 <div>
                   <label class="block text-[10px] font-bold text-slate-600 uppercase tracking-widest mb-1.5">Destination Zip Code*</label>
-                  <input v-model="form.delivery_zip" type="text" class="w-full border border-slate-300 bg-slate-50 px-3 py-2 text-sm focus:outline-none focus:border-[#2962ff] text-slate-800 font-medium" />
+                  <input v-model="form.delivery_zip" type="text" class="w-full min-h-[44px] border border-slate-300 bg-slate-50 px-3 py-2 text-sm focus:outline-none focus:border-[#2962ff] text-slate-800 font-medium touch-manipulation" />
                 </div>
                 <div class="pt-2 border-t border-slate-100 flex flex-col gap-2">
                   <div class="flex items-center gap-2">
@@ -192,12 +194,12 @@
               </p>
             </div>
             <div class="flex items-center gap-4 shrink-0">
-              <router-link :to="backToCatalogLink" class="text-[11px] font-bold text-slate-500 uppercase tracking-wider hover:text-slate-800 transition-colors">Cancel</router-link>
+              <router-link :to="backToCatalogLink" class="min-h-[44px] min-w-[44px] inline-flex items-center justify-center text-[11px] font-bold text-slate-500 uppercase tracking-wider hover:text-slate-800 transition-colors touch-manipulation">Cancel</router-link>
               <button
                 type="button"
                 :disabled="!isLoggedIn || submitting"
                 @click="submitQuote"
-                class="bg-[#2962ff] text-white font-bold text-[11px] uppercase tracking-wider px-8 py-3.5 hover:bg-blue-800 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                class="min-h-[44px] px-8 py-3.5 bg-[#2962ff] text-white font-bold text-[11px] uppercase tracking-wider hover:bg-blue-800 transition-colors disabled:opacity-60 disabled:cursor-not-allowed touch-manipulation"
               >
                 {{ submitting ? 'Sending…' : 'Verify & Send RFQ' }}
               </button>
@@ -215,6 +217,7 @@ import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '../../stores/auth';
 import api from '../../services/api';
 import { useToast } from '../../composables/useToast';
+import PageLoader from '../../components/ui/PageLoader.vue';
 
 const props = defineProps({
   productId: { type: Number, default: null }

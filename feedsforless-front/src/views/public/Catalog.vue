@@ -1,15 +1,16 @@
 <template>
-  <div class="flex flex-col md:flex-row w-full min-h-screen bg-white">
-    <aside class="w-full md:w-60 shrink-0 border-r border-slate-200 bg-slate-50 min-h-full flex flex-col pt-6 z-10">
-      <div class="px-0 mb-8">
-        <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 px-6">Categories</h3>
-        <nav class="flex flex-col space-y-0.5">
+  <div class="flex flex-col md:flex-row w-full h-full min-h-0 bg-white dark:bg-slate-900">
+    <!-- Teleported Mobile Categories -->
+    <Teleport to="#mobile-catalog-categories" v-if="isMounted">
+      <div class="px-4 py-2 border-b border-slate-200 dark:border-slate-700">
+        <h2 class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3">Catalog Categories</h2>
+        <nav class="flex flex-col space-y-1">
           <button
             @click="selectCategory(null)"
-            class="text-left px-6 py-2 text-sm font-bold transition-colors border-l-4"
+            class="w-full text-left px-3 py-2 text-[13px] rounded-md transition-colors"
             :class="currentView === 'grid' 
-              ? 'bg-[#2962ff] text-white border-blue-700' 
-              : 'text-slate-600 border-transparent hover:bg-slate-200 hover:text-slate-900'"
+              ? 'bg-[#2962ff] dark:bg-blue-600 text-white font-bold' 
+              : 'text-slate-600 dark:text-slate-300 font-medium hover:bg-slate-50 dark:hover:bg-slate-800'"
           >
             All Commodities
           </button>
@@ -17,47 +18,79 @@
             v-for="cat in allCategories"
             :key="cat.id"
             @click="selectCategory(cat)"
-            class="text-left px-6 py-2 text-sm font-medium transition-colors border-l-4"
+            class="w-full text-left px-3 py-2 text-[13px] rounded-md transition-colors"
             :class="currentView === 'list' && selectedCategory && selectedCategory.id === cat.id
-              ? 'bg-[#2962ff] text-white border-blue-700 font-bold' 
-              : 'text-slate-600 border-transparent hover:bg-slate-200 hover:text-slate-900'"
+              ? 'bg-[#2962ff] dark:bg-blue-600 text-white font-bold' 
+              : 'text-slate-600 dark:text-slate-300 font-medium hover:bg-slate-50 dark:hover:bg-slate-800'"
           >
             {{ cat.label }}
           </button>
         </nav>
       </div>
-      <div class="px-6 mb-8 mt-4 border-t border-slate-200 pt-6">
-        <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Resources</h3>
-        <nav class="flex flex-col space-y-3 text-sm font-bold text-[#2962ff]">
-          <a href="#" class="hover:underline">Logistics Map</a>
-          <a href="#" class="hover:underline">Bulk Volume Tiers</a>
-          <a href="#" class="hover:underline">Tax Exemption Forms</a>
-          <a href="#" class="hover:underline">Supplier Compliance</a>
+    </Teleport>
+
+    <aside class="w-full md:w-64 shrink-0 border-r border-slate-200 dark:border-slate-700 bg-[#f8fafc]/50 dark:bg-slate-800/50 min-h-full flex flex-col pt-8 pb-8 px-4 z-10 hidden md:flex">
+      <div class="mb-8">
+        <h2 class="text-[11px] font-black text-slate-400/80 dark:text-slate-500 uppercase tracking-widest mb-4 px-2">Categories</h2>
+        <nav class="flex flex-col space-y-1">
+          <button
+            @click="selectCategory(null)"
+            class="w-full text-left px-3 py-2 text-[13px] rounded-md transition-colors"
+            :class="currentView === 'grid' 
+              ? 'bg-[#2962ff] dark:bg-blue-600 text-white font-bold' 
+              : 'text-slate-600 dark:text-slate-300 font-medium hover:text-[#2962ff] dark:hover:text-blue-400'"
+          >
+            All Commodities
+          </button>
+          <button
+            v-for="cat in allCategories"
+            :key="cat.id"
+            @click="selectCategory(cat)"
+            class="w-full text-left px-3 py-2 text-[13px] rounded-md transition-colors"
+            :class="currentView === 'list' && selectedCategory && selectedCategory.id === cat.id
+              ? 'bg-[#2962ff] dark:bg-blue-600 text-white font-bold' 
+              : 'text-slate-600 dark:text-slate-300 font-medium hover:text-[#2962ff] dark:hover:text-blue-400'"
+          >
+            {{ cat.label }}
+          </button>
         </nav>
       </div>
+      <!-- <div class="border-t border-slate-200/80 mb-8 mx-2"></div>
+      <div>
+        <h2 class="text-[11px] font-black text-slate-400/80 uppercase tracking-widest mb-4 px-2">Resources</h2>
+        <nav class="flex flex-col space-y-3 px-2 text-[13px]">
+          <a href="#" class="text-[#2962ff] hover:underline font-bold">Logistics Map</a>
+          <a href="#" class="text-[#2962ff] hover:underline font-bold">Bulk Volume Tiers</a>
+          <a href="#" class="text-[#2962ff] hover:underline font-bold">Tax Exemption Forms</a>
+          <a href="#" class="text-[#2962ff] hover:underline font-bold">Supplier Compliance</a>
+        </nav>
+      </div> -->
     </aside>
 
-    <main class="flex-1 w-full bg-white relative p-6 lg:p-10">
+    <main class="flex-1 w-full bg-white dark:bg-slate-900 relative p-4 md:p-6 lg:p-10">
       <div v-if="currentView === 'grid'" class="animate-in fade-in duration-300">
-        <h1 class="text-3xl font-black italic text-[#003366] uppercase mb-1">Industrial Feed Commodity Catalog</h1>
-        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-8 border-b-2 border-slate-900 pb-4">Direct Supply Chain Portal | North American Distribution</p>
+        <h1 class="text-2xl md:text-3xl font-black italic text-[#003366] dark:text-blue-300 uppercase mb-1">Industrial Feed Commodity Catalog</h1>
+        <p class="text-[10px] md:text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-8 border-b-[3px] border-slate-900 dark:border-slate-700 pb-4">Direct Supply Chain Portal | North American Distribution</p>
         
-        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 border-l border-t border-slate-200">
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 border-t border-l border-slate-200 dark:border-slate-700">
           <div 
             v-for="cat in allCategories" 
             :key="cat.id"
             @click="selectCategory(cat)"
-            class="border-r border-b border-slate-200 p-6 flex flex-col h-56 hover:bg-slate-50 cursor-pointer group transition-colors"
+            class="border-r border-b border-slate-200 dark:border-slate-700 p-6 flex flex-col h-64 hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer group transition-colors relative"
           >
-            <h2 class="text-[#2962ff] font-black uppercase tracking-tight mb-4 text-base">{{ cat.label }}</h2>
+            <div class="flex items-center justify-between mb-6">
+              <h2 class="text-[#2962ff] dark:text-blue-400 font-black uppercase tracking-tight text-[15px]">{{ cat.label }}</h2>
+              <svg class="w-3.5 h-3.5 text-slate-300 dark:text-slate-600 group-hover:text-[#2962ff] dark:group-hover:text-blue-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </div>
             <div class="flex-1 overflow-hidden">
-              <ul class="text-xs text-slate-600 space-y-2">
+              <ul class="text-[13px] text-slate-600 dark:text-slate-300 space-y-3 font-medium">
                 <li v-for="product in getCategoryProducts(cat.id).slice(0, 3)" :key="product.id" class="truncate">
                   {{ product.name }}
                 </li>
               </ul>
             </div>
-            <div class="mt-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest group-hover:text-[#2962ff] transition-colors">
+            <div class="mt-4 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest transition-colors mb-2">
               View Full Directory &rarr;
             </div>
           </div>
@@ -65,18 +98,26 @@
       </div>
 
       <div v-else-if="currentView === 'list'" class="animate-in fade-in duration-300">
-        <div class="flex items-end justify-between border-b-2 border-slate-200 pb-4 mb-4">
-          <h1 class="text-2xl font-black uppercase text-slate-900 tracking-tight">{{ selectedCategory ? selectedCategory.label : 'Search Results' }}</h1>
-          <span class="text-sm font-medium text-slate-500">{{ filteredProducts.length }} Products Available</span>
+        <div class="flex flex-col md:flex-row md:items-end justify-between border-b-2 border-slate-200 dark:border-slate-700 pb-4 mb-4 gap-2">
+          <div class="flex items-center gap-3">
+            <button @click="currentView = 'grid'; selectedCategory = null" class="md:hidden p-1.5 -ml-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+            </button>
+            <h1 class="text-xl md:text-2xl font-black uppercase text-slate-900 dark:text-white tracking-tight">{{ selectedCategory ? selectedCategory.label : 'Search Results' }}</h1>
+          </div>
+          <span class="text-sm font-medium text-slate-500 dark:text-slate-400">{{ filteredProducts.length }} Products Available</span>
         </div>
 
-        <div class="overflow-x-auto min-h-[500px]">
-          <table class="w-full text-left text-sm whitespace-nowrap lg:whitespace-normal">
+        <div class="overflow-x-auto min-h-[500px] relative -mx-4 md:mx-0 px-4 md:px-0">
+          <div v-if="loading" class="absolute inset-0 flex items-center justify-center bg-white/90 dark:bg-slate-900/90 z-10 rounded-lg">
+            <PageLoader message="Loading products…" />
+          </div>
+          <table v-show="!loading" class="w-full text-left text-sm whitespace-nowrap lg:whitespace-normal animate-in fade-in duration-200">
             <thead>
-              <tr class="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-200">
-                <th class="py-3 px-4 min-w-[300px]">Product Identity</th>
-                <th class="py-3 px-4 w-[120px]">Grade / Spec</th>
-                <th class="py-3 px-4 w-1/4">Packaging</th>
+              <tr class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest border-b border-slate-200 dark:border-slate-700">
+                <th class="py-3 px-4 min-w-[200px] md:min-w-[300px]">Product Identity</th>
+                <th class="py-3 px-4 w-[120px] hidden md:table-cell">Grade / Spec</th>
+                <th class="py-3 px-4 w-1/4 hidden lg:table-cell">Packaging</th>
                 <th class="py-3 px-4 w-[160px] text-right">Actions</th>
               </tr>
             </thead>
@@ -84,29 +125,32 @@
               <tr 
                 v-for="product in filteredProducts" 
                 :key="product.id" 
-                class="border-b border-slate-200 hover:bg-[#f5f8ff] group transition-colors"
+                class="border-b border-slate-200 dark:border-slate-700 hover:outline hover:outline-2 hover:outline-[#2962ff] dark:hover:outline-blue-500 hover:outline-offset-[-2px] bg-white dark:bg-slate-900 group transition-all duration-100"
               >
                 <td class="py-4 px-4 align-top">
-                  <div class="font-bold text-[#2962ff] text-base mb-0.5 leading-tight cursor-pointer">{{ product.name }}</div>
-                  <div class="text-[11px] text-slate-500 max-w-sm leading-relaxed truncate">{{ product.description || 'Standard specification applicable for general use.' }}</div>
+                  <div class="font-bold text-[#2962ff] dark:text-blue-400 text-sm md:text-base mb-0.5 leading-tight cursor-pointer">{{ product.name }}</div>
+                  <div class="text-[11px] text-slate-500 dark:text-slate-400 max-w-sm leading-relaxed truncate">{{ product.description || 'Standard specification applicable for general use.' }}</div>
+                  <div class="md:hidden mt-2 text-xs text-slate-500 dark:text-slate-400">
+                    <span class="font-bold text-slate-700 dark:text-slate-300 mr-2">{{ product.grade || '--' }}</span>
+                  </div>
                 </td>
-                <td class="py-4 px-4 align-top font-bold text-slate-700 text-xs">
+                <td class="py-4 px-4 align-top font-bold text-slate-700 dark:text-slate-300 text-xs hidden md:table-cell">
                   {{ product.grade || '--' }}
                 </td>
-                <td class="py-4 px-4 align-top text-slate-600 text-xs">
+                <td class="py-4 px-4 align-top text-slate-600 dark:text-slate-400 text-xs hidden lg:table-cell">
                   <span v-if="product.packaging_options && product.packaging_options.length > 0">
                     {{ product.packaging_options.map(p => p.type_name).join(', ') }}
                   </span>
                   <span v-else>Bags, Totes, Bulk Truck</span>
                 </td>
-                <td class="py-4 px-4 align-top text-right min-w-[200px]">
-                  <div class="flex items-center justify-end gap-2 flex-wrap">
-                    <button v-if="product.tds_document_path" @click.prevent="previewDocument(product.id, 'tds')" class="bg-slate-200 text-slate-600 hover:bg-slate-300 text-[9px] font-bold px-2 py-1.5 uppercase tracking-wider rounded shrink-0">TDS</button>
-                    <button v-if="product.sds_document_path" @click.prevent="previewDocument(product.id, 'sds')" class="bg-slate-200 text-slate-600 hover:bg-slate-300 text-[9px] font-bold px-2 py-1.5 uppercase tracking-wider rounded shrink-0">SDS</button>
-                    <button v-if="product.coa_document_path" @click.prevent="previewDocument(product.id, 'coa')" class="bg-slate-200 text-slate-600 hover:bg-slate-300 text-[9px] font-bold px-2 py-1.5 uppercase tracking-wider rounded shrink-0">ODA</button>
+                <td class="py-4 px-4 align-top text-right min-w-[150px] md:min-w-[200px]">
+                  <div class="flex items-center justify-end gap-1.5 md:gap-2 flex-wrap">
+                    <button v-if="product.tds_document_path" @click.prevent="previewDocument(product.id, 'tds')" class="bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600 text-[9px] font-bold px-2 py-1.5 uppercase tracking-wider rounded shrink-0">TDS</button>
+                    <button v-if="product.sds_document_path" @click.prevent="previewDocument(product.id, 'sds')" class="bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600 text-[9px] font-bold px-2 py-1.5 uppercase tracking-wider rounded shrink-0">SDS</button>
+                    <button v-if="product.coa_document_path" @click.prevent="previewDocument(product.id, 'coa')" class="bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600 text-[9px] font-bold px-2 py-1.5 uppercase tracking-wider rounded shrink-0">ODA</button>
                     <router-link
                       :to="requestQuoteRoute(product)"
-                      class="inline-block bg-[#2962ff] text-white font-bold text-[11px] uppercase tracking-wider px-4 py-2 rounded opacity-0 group-hover:opacity-100 transition-opacity hover:bg-blue-800 shrink-0"
+                      class="inline-block min-h-[40px] md:min-h-[44px] min-w-[40px] flex items-center justify-center bg-[#2962ff] dark:bg-blue-600 text-white font-bold text-[10px] md:text-[11px] uppercase tracking-wider px-3 md:px-4 py-2 rounded opacity-100 transition-opacity hover:bg-blue-800 dark:hover:bg-blue-700 shrink-0 touch-manipulation"
                     >
                       Request Quote
                     </router-link>
@@ -128,7 +172,9 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
+import { useAuthStore } from '../../stores/auth';
 import api from '../../services/api';
+import PageLoader from '../../components/ui/PageLoader.vue';
 
 const props = defineProps({
   searchQuery: {
@@ -139,10 +185,16 @@ const props = defineProps({
 
 const router = useRouter();
 const route = useRoute();
+const authStore = useAuthStore();
 const products = ref([]);
 const loading = ref(true);
 const selectedCategory = ref(null);
 const currentView = ref('grid');
+const isMounted = ref(false);
+
+const isClient = computed(() => {
+  return !!authStore.token && (!authStore.user?.roles || !authStore.user.roles.some((r) => r.name === 'admin'));
+});
 
 const apiBaseUrl = api.defaults.baseURL || '';
 
@@ -200,6 +252,8 @@ const selectCategory = (cat) => {
     selectedCategory.value = cat;
     currentView.value = 'list';
   }
+  // Dispatch event to smoothly close mobile menu if it's open
+  window.dispatchEvent(new Event('close-mobile-menu'));
 };
 
 const fetchProducts = async () => {
@@ -227,6 +281,7 @@ const fetchProducts = async () => {
 };
 
 onMounted(() => {
+  isMounted.value = true;
   fetchProducts();
 });
 

@@ -75,7 +75,9 @@
             <h2 class="text-lg font-semibold text-slate-800 dark:text-white">Recent quotes</h2>
             <router-link v-if="(clientStats.recent_quotes?.length || 0) > 0" to="/quotes" class="text-sm font-medium text-emerald-600 dark:text-emerald-400 hover:underline">View all</router-link>
           </div>
-          <div v-if="clientLoading" class="flex items-center justify-center py-12 text-slate-400 text-sm">Loading…</div>
+          <div v-if="clientLoading" class="flex items-center justify-center py-12">
+            <LoadingSpinner size="md" label="Loading…" />
+          </div>
           <div v-else-if="!clientStats.recent_quotes?.length" class="flex flex-col items-center justify-center py-12 text-slate-500 dark:text-slate-400 text-sm text-center">
             <svg class="w-12 h-12 text-slate-300 dark:text-slate-600 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
             <p>No quote requests yet.</p>
@@ -154,7 +156,9 @@
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
         <div class="lg:col-span-2 bg-white dark:bg-slate-800 p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-700 shadow-card">
           <h2 class="text-lg font-semibold text-slate-800 dark:text-white mb-6">RFQ volume (last 7 days)</h2>
-          <div v-if="adminLoading" class="h-64 flex items-center justify-center text-slate-400 text-sm">Loading…</div>
+          <div v-if="adminLoading" class="h-64 flex items-center justify-center">
+            <LoadingSpinner size="md" label="Loading…" />
+          </div>
           <div v-else class="h-64 flex items-end justify-between gap-1 sm:gap-2 px-2 pb-4">
             <template v-for="(day, idx) in (adminStats.rfq_by_day || [])" :key="day.date">
               <div class="flex-1 flex flex-col items-center gap-1 min-w-0">
@@ -180,7 +184,9 @@
             <h2 class="text-lg font-semibold text-slate-800 dark:text-white">Recent quotes</h2>
             <router-link to="/admin/quotes" class="text-sm font-medium text-emerald-600 dark:text-emerald-400 hover:underline">View all</router-link>
           </div>
-          <div v-if="adminLoading" class="flex items-center justify-center py-12 text-slate-400 text-sm">Loading…</div>
+          <div v-if="adminLoading" class="flex items-center justify-center py-12">
+            <LoadingSpinner size="md" label="Loading…" />
+          </div>
           <div v-else-if="!adminStats.recent_quotes?.length" class="flex items-center justify-center py-12 text-slate-500 dark:text-slate-400 text-sm">No recent activity.</div>
           <div v-else class="space-y-4 overflow-y-auto flex-1 min-h-0">
             <div v-for="(quote, i) in adminStats.recent_quotes" :key="quote.id" class="flex relative">
@@ -206,6 +212,7 @@ import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import api from '../services/api';
 import { useAuthStore } from '../stores/auth';
+import LoadingSpinner from '../components/ui/LoadingSpinner.vue';
 
 const route = useRoute();
 const router = useRouter();

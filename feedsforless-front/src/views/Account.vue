@@ -1,12 +1,12 @@
 <template>
-  <div class="space-y-6">
+  <div class="p-4 sm:p-6 lg:p-10 w-full max-w-4xl mx-auto space-y-6">
     <div>
-      <h1 class="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">My Account</h1>
-      <p class="text-slate-500 dark:text-slate-400 mt-0.5">Update your profile and contact information.</p>
+      <h1 class="text-2xl sm:text-3xl font-black italic text-[#003366] dark:text-blue-300 uppercase tracking-tight">My Account</h1>
+      <p class="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mt-1 border-b-[3px] border-slate-900 dark:border-slate-700 pb-4">Update your profile and contact information.</p>
     </div>
 
-    <form class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-card overflow-hidden max-w-xl" @submit.prevent="save">
-      <div class="p-6 space-y-4">
+    <form class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow overflow-hidden max-w-2xl" @submit.prevent="save">
+      <div class="p-4 sm:p-6 space-y-5">
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">First name</label>

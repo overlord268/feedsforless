@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-/* Dark mode by class (sol = claro, luna = oscuro) */
+/* Dark mode by class (light = default, dark = .dark on html) */
 @custom-variant dark (&:where(.dark, .dark *));
 
 html {
@@ -20,4 +20,14 @@ input:focus, select:focus, textarea:focus, [contenteditable]:focus {
 .table-scroll {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+}
+
+/* Loading / progress animations */
+@keyframes progress-indeterminate {
+  0% { transform: translateX(-100%); }
+  50% { transform: translateX(0%); }
+  100% { transform: translateX(100%); }
+}
+.animate-progress {
+  animation: progress-indeterminate 1.5s ease-in-out infinite;
 }
