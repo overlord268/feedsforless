@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
+use App\Domains\B2B\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -16,9 +16,10 @@ class DatabaseSeeder extends Seeder
         // Check if the user already exists to avoid 500 errors
         if (!User::where('email', 'admin@feedsforless.com')->exists()) {
             User::create([
-                'name'     => 'Admin User',
-                'email'    => 'admin@feedsforless.com',
-                'password' => Hash::make('password123'), // Change this later!
+                'first_name' => 'Admin',
+                'last_name'  => 'User',
+                'email'      => 'admin@feedsforless.com',
+                'password'   => Hash::make('password123'), // Change this later!
             ]);
         }
         
