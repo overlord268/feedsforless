@@ -251,10 +251,11 @@ function isAdminRoute(to) {
     return to.matched.some((r) => r.meta && r.meta.requiresAdmin);
 }
 
+const ADMIN_ROLE_NAMES = ['admin', 'Admin', 'Super Admin'];
 function userIsAdmin(authStore) {
     const u = authStore.user;
     if (!u || !u.roles || !Array.isArray(u.roles)) return false;
-    return u.roles.some((r) => r.name === 'admin');
+    return u.roles.some((r) => ADMIN_ROLE_NAMES.includes(r.name));
 }
 
 router.beforeEach(async (to, from) => {
