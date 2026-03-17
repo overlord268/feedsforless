@@ -21,10 +21,11 @@ class StoreProductRequest extends FormRequest
         return [
             'sku' => ['required', 'string', 'max:255', 'unique:products,sku'],
             'name' => ['required', 'string', 'max:255'],
+            'slug' => ['nullable', 'string', 'max:255', 'unique:products,slug'],
             'grade' => ['nullable', 'string', 'max:255'],
             'base_price_ref' => ['nullable', 'numeric', 'min:0'],
             'description' => ['nullable', 'string'],
-            'stock_status' => ['nullable', 'string', 'in:in_stock,out_of_stock,backorder'],
+            'stock_status' => ['nullable', 'string', 'in:in_stock,out_of_stock,backorder,call'],
             'availability' => ['nullable', 'string', 'max:255'],
             'status' => ['required', 'string', 'in:draft,published,archived'],
             'origin_address' => ['nullable', 'string'],

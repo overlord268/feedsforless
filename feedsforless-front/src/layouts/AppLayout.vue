@@ -20,7 +20,7 @@
 
       <main class="flex-1 flex flex-col min-h-0 p-4 sm:p-5 md:p-6 lg:p-8 w-full overflow-y-auto bg-slate-50/50 dark:bg-slate-900/50" :class="{ 'overflow-hidden': route.meta.productForm }">
         <div class="max-w-6xl mx-auto w-full flex-1 flex flex-col min-h-0" :class="{ 'max-w-none': route.meta.productForm }">
-          <router-view class="flex-1 flex flex-col min-h-0"></router-view>
+          <router-view :key="$route.fullPath" class="flex-1 flex flex-col min-h-0"></router-view>
         </div>
       </main>
     </div>

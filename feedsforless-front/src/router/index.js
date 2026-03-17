@@ -29,13 +29,29 @@ const routes = [
                 component: () => import('../views/public/Catalog.vue')
             },
             {
-                path: 'catalog/request-quote',
+                path: 'products/:slug',
+                name: 'ProductDetail',
+                component: () => import('../views/public/ProductDetail.vue'),
+                props: (route) => ({ productSlug: route.params.slug || null })
+            },
+            {
+                path: 'catalog/product/:id',
+                name: 'ProductDetailLegacy',
+                component: () => import('../views/public/ProductDetail.vue'),
+                props: (route) => ({ productId: route.params.id ? Number(route.params.id) : null })
+            },
+            {
+                path: 'request-quote',
                 name: 'RequestQuote',
                 component: () => import('../views/public/RequestQuote.vue'),
                 props: (route) => {
                     const id = route.query.productId ? Number(route.query.productId) : null;
                     return { productId: id != null && !Number.isNaN(id) ? id : null };
                 }
+            },
+            {
+                path: 'catalog/request-quote',
+                redirect: (to) => ({ name: 'RequestQuote', query: to.query })
             },
             {
                 path: 'account',
@@ -54,6 +70,18 @@ const routes = [
                 name: 'CustomerQuotes',
                 component: () => import('../views/customer/CustomerQuotes.vue'),
                 meta: { requiresAuth: true }
+            },
+            {
+                path: ':parentSlug/:childSlug',
+                name: 'CategoryHubNested',
+                component: () => import('../views/public/Catalog.vue'),
+                props: (route) => ({ categoryParentSlug: route.params.parentSlug, categoryChildSlug: route.params.childSlug })
+            },
+            {
+                path: ':categorySlug',
+                name: 'CategoryHub',
+                component: () => import('../views/public/Catalog.vue'),
+                props: (route) => ({ categorySlug: route.params.categorySlug })
             }
         ]
     },
@@ -72,13 +100,37 @@ const routes = [
                 component: () => import('../views/public/Catalog.vue')
             },
             {
-                path: 'app/catalog/request-quote',
+                path: 'app/products/:slug',
+                name: 'AppProductDetail',
+                component: () => import('../views/public/ProductDetail.vue'),
+                props: (route) => ({ productSlug: route.params.slug || null })
+            },
+            {
+                path: 'app/catalog/product/:id',
+                name: 'AppProductDetailLegacy',
+                component: () => import('../views/public/ProductDetail.vue'),
+                props: (route) => ({ productId: route.params.id ? Number(route.params.id) : null })
+            },
+            {
+                path: 'app/request-quote',
                 name: 'AppRequestQuote',
                 component: () => import('../views/public/RequestQuote.vue'),
                 props: (route) => {
                     const id = route.query.productId ? Number(route.query.productId) : null;
                     return { productId: id != null && !Number.isNaN(id) ? id : null };
                 }
+            },
+            {
+                path: 'app/:parentSlug/:childSlug',
+                name: 'AppCategoryHubNested',
+                component: () => import('../views/public/Catalog.vue'),
+                props: (route) => ({ categoryParentSlug: route.params.parentSlug, categoryChildSlug: route.params.childSlug })
+            },
+            {
+                path: 'app/:categorySlug',
+                name: 'AppCategoryHub',
+                component: () => import('../views/public/Catalog.vue'),
+                props: (route) => ({ categorySlug: route.params.categorySlug })
             },
             {
                 path: 'dashboard',
@@ -234,11 +286,13 @@ router.beforeEach(async (to, from) => {
         }
     }
 
-    // Logged in as ADMIN: public catalog → use app layout (/app/catalog)
-    if (isAuthenticated && userIsAdmin(authStore) && (to.name === 'PublicHome' || to.name === 'Catalog' || to.name === 'RequestQuote')) {
-        if (to.name === 'RequestQuote') {
-            return { name: 'AppRequestQuote', query: to.query };
-        }
+    // Logged in as ADMIN: public catalog → use app layout (/app/...)
+    if (isAuthenticated && userIsAdmin(authStore) && (to.name === 'PublicHome' || to.name === 'Catalog' || to.name === 'ProductDetail' || to.name === 'ProductDetailLegacy' || to.name === 'RequestQuote' || to.name === 'CategoryHub' || to.name === 'CategoryHubNested')) {
+        if (to.name === 'RequestQuote') return { name: 'AppRequestQuote', query: to.query };
+        if (to.name === 'ProductDetail' && to.params.slug) return { name: 'AppProductDetail', params: { slug: to.params.slug }, query: to.query };
+        if (to.name === 'ProductDetailLegacy' && to.params.id) return { name: 'AppProductDetailLegacy', params: { id: to.params.id }, query: to.query };
+        if (to.name === 'CategoryHub' && to.params.categorySlug) return { name: 'AppCategoryHub', params: { categorySlug: to.params.categorySlug }, query: to.query };
+        if (to.name === 'CategoryHubNested' && to.params.parentSlug && to.params.childSlug) return { name: 'AppCategoryHubNested', params: { parentSlug: to.params.parentSlug, childSlug: to.params.childSlug }, query: to.query };
         return { name: 'AppCatalog', query: to.query };
     }
 

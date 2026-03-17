@@ -12,6 +12,11 @@ class QuoteRequest extends Model
 {
     protected $fillable = [
         'request_by_id',
+        'guest_email',
+        'guest_company_name',
+        'guest_contact_name',
+        'guest_phone',
+        'guest_destination_address',
         'target_address_id',
         'delivery_zip',
         'requires_liftgate',

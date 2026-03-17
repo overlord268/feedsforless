@@ -12,6 +12,7 @@ use App\Http\Resources\Api\V1\ProductResource;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class AdminProductController extends Controller
 {
@@ -33,6 +34,9 @@ class AdminProductController extends Controller
             $productData = $this->productAttributesFromRequest($request->validated());
             if (empty($productData['stock_status'])) {
                 $productData['stock_status'] = 'in_stock';
+            }
+            if (empty($productData['slug'])) {
+                $productData['slug'] = $this->uniqueSlugForName($productData['name'] ?? 'product', null);
             }
             $product = Product::create($productData);
             $this->syncNestedRelations($product, $request->validated());
@@ -62,6 +66,9 @@ class AdminProductController extends Controller
         $product = DB::transaction(function () use ($request, $product) {
             $productData = $this->productAttributesFromRequest($request->validated());
             if (!empty($productData)) {
+                if (array_key_exists('name', $productData) && empty($productData['slug'])) {
+                    $productData['slug'] = $this->uniqueSlugForName($productData['name'], $product->id);
+                }
                 $product->update($productData);
             }
             $this->syncNestedRelations($product, $request->validated());
@@ -103,6 +110,26 @@ class AdminProductController extends Controller
             $attrs['description'] = '';
         }
         return $attrs;
+    }
+
+    private function uniqueSlugForName(string $name, ?int $excludeId): string
+    {
+        $base = Str::slug($name ?: 'product');
+        $slug = $base;
+        $n = 0;
+        $query = Product::where('slug', $slug);
+        if ($excludeId !== null) {
+            $query->where('id', '!=', $excludeId);
+        }
+        while ($query->exists()) {
+            $n++;
+            $slug = $base . '-' . $n;
+            $query = Product::where('slug', $slug);
+            if ($excludeId !== null) {
+                $query->where('id', '!=', $excludeId);
+            }
+        }
+        return $slug;
     }
 
     private function syncNestedRelations(Product $product, array $validated): void

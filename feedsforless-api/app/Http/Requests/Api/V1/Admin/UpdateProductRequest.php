@@ -23,10 +23,11 @@ class UpdateProductRequest extends FormRequest
         return [
             'sku' => ['sometimes', 'required', 'string', 'max:255', Rule::unique('products')->ignore($product)],
             'name' => ['sometimes', 'required', 'string', 'max:255'],
+            'slug' => ['sometimes', 'nullable', 'string', 'max:255', Rule::unique('products')->ignore($product)],
             'grade' => ['nullable', 'string', 'max:255'],
             'base_price_ref' => ['nullable', 'numeric', 'min:0'],
             'description' => ['nullable', 'string'],
-            'stock_status' => ['sometimes', 'string', 'in:in_stock,out_of_stock,backorder'],
+            'stock_status' => ['sometimes', 'string', 'in:in_stock,out_of_stock,backorder,call'],
             'availability' => ['nullable', 'string', 'max:255'],
             'status' => ['sometimes', 'required', 'string', 'in:draft,published,archived'],
             'origin_address' => ['nullable', 'string'],

@@ -5,26 +5,22 @@
       <div class="px-4 py-2 border-b border-slate-200 dark:border-slate-700">
         <h2 class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3">Catalog Categories</h2>
         <nav class="flex flex-col space-y-1">
-          <button
-            @click="selectCategory(null)"
+          <router-link
+            :to="catalogRootLink"
             class="w-full text-left px-3 py-2 text-[13px] rounded-md transition-colors"
-            :class="currentView === 'grid' 
-              ? 'bg-[#2962ff] dark:bg-blue-600 text-white font-bold' 
-              : 'text-slate-600 dark:text-slate-300 font-medium hover:bg-slate-50 dark:hover:bg-slate-800'"
+            :class="!selectedCategory ? 'bg-[#2962ff] dark:bg-blue-600 text-white font-bold' : 'text-slate-600 dark:text-slate-300 font-medium hover:bg-slate-50 dark:hover:bg-slate-800'"
           >
             All Commodities
-          </button>
-          <button
-            v-for="cat in allCategories"
+          </router-link>
+          <router-link
+            v-for="cat in sidebarCategoriesWithLinks"
             :key="cat.id"
-            @click="selectCategory(cat)"
+            :to="cat.link"
             class="w-full text-left px-3 py-2 text-[13px] rounded-md transition-colors"
-            :class="currentView === 'list' && selectedCategory && selectedCategory.id === cat.id
-              ? 'bg-[#2962ff] dark:bg-blue-600 text-white font-bold' 
-              : 'text-slate-600 dark:text-slate-300 font-medium hover:bg-slate-50 dark:hover:bg-slate-800'"
+            :class="selectedCategory && selectedCategory.id === cat.id ? 'bg-[#2962ff] dark:bg-blue-600 text-white font-bold' : 'text-slate-600 dark:text-slate-300 font-medium hover:bg-slate-50 dark:hover:bg-slate-800'"
           >
             {{ cat.label }}
-          </button>
+          </router-link>
         </nav>
       </div>
     </Teleport>
@@ -33,26 +29,12 @@
       <div class="mb-8">
         <h2 class="text-[11px] font-black text-slate-400/80 dark:text-slate-500 uppercase tracking-widest mb-4 px-2">Categories</h2>
         <nav class="flex flex-col space-y-1">
-          <button
-            @click="selectCategory(null)"
-            class="w-full text-left px-3 py-2 text-[13px] rounded-md transition-colors"
-            :class="currentView === 'grid' 
-              ? 'bg-[#2962ff] dark:bg-blue-600 text-white font-bold' 
-              : 'text-slate-600 dark:text-slate-300 font-medium hover:text-[#2962ff] dark:hover:text-blue-400'"
-          >
+          <router-link :to="catalogRootLink" class="w-full text-left px-3 py-2 text-[13px] rounded-md transition-colors" :class="!selectedCategory ? 'bg-[#2962ff] dark:bg-blue-600 text-white font-bold' : 'text-slate-600 dark:text-slate-300 font-medium hover:text-[#2962ff] dark:hover:text-blue-400'">
             All Commodities
-          </button>
-          <button
-            v-for="cat in allCategories"
-            :key="cat.id"
-            @click="selectCategory(cat)"
-            class="w-full text-left px-3 py-2 text-[13px] rounded-md transition-colors"
-            :class="currentView === 'list' && selectedCategory && selectedCategory.id === cat.id
-              ? 'bg-[#2962ff] dark:bg-blue-600 text-white font-bold' 
-              : 'text-slate-600 dark:text-slate-300 font-medium hover:text-[#2962ff] dark:hover:text-blue-400'"
-          >
+          </router-link>
+          <router-link v-for="cat in sidebarCategoriesWithLinks" :key="cat.id" :to="cat.link" class="w-full text-left px-3 py-2 text-[13px] rounded-md transition-colors" :class="selectedCategory && selectedCategory.id === cat.id ? 'bg-[#2962ff] dark:bg-blue-600 text-white font-bold' : 'text-slate-600 dark:text-slate-300 font-medium hover:text-[#2962ff] dark:hover:text-blue-400'">
             {{ cat.label }}
-          </button>
+          </router-link>
         </nav>
       </div>
       <!-- <div class="border-t border-slate-200/80 mb-8 mx-2"></div>
@@ -73,10 +55,10 @@
         <p class="text-[10px] md:text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-8 border-b-[3px] border-slate-900 dark:border-slate-700 pb-4">Direct Supply Chain Portal | North American Distribution</p>
         
         <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 border-t border-l border-slate-200 dark:border-slate-700">
-          <div 
-            v-for="cat in allCategories" 
+          <router-link
+            v-for="cat in allCategories"
             :key="cat.id"
-            @click="selectCategory(cat)"
+            :to="categoryHubLink(cat)"
             class="border-r border-b border-slate-200 dark:border-slate-700 p-6 flex flex-col h-64 hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer group transition-colors relative"
           >
             <div class="flex items-center justify-between mb-6">
@@ -93,7 +75,7 @@
             <div class="mt-4 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest transition-colors mb-2">
               View Full Directory &rarr;
             </div>
-          </div>
+          </router-link>
         </div>
       </div>
 
@@ -125,10 +107,11 @@
               <tr 
                 v-for="product in filteredProducts" 
                 :key="product.id" 
-                class="border-b border-slate-200 dark:border-slate-700 hover:outline hover:outline-2 hover:outline-[#2962ff] dark:hover:outline-blue-500 hover:outline-offset-[-2px] bg-white dark:bg-slate-900 group transition-all duration-100"
+                class="border-b border-slate-200 dark:border-slate-700 hover:outline hover:outline-2 hover:outline-[#2962ff] dark:hover:outline-blue-500 hover:outline-offset-[-2px] bg-white dark:bg-slate-900 group transition-all duration-100 cursor-pointer"
+                @click="goToProduct(product)"
               >
-                <td class="py-4 px-4 align-top">
-                  <div class="font-bold text-[#2962ff] dark:text-blue-400 text-sm md:text-base mb-0.5 leading-tight cursor-pointer">{{ product.name }}</div>
+                <td class="py-4 px-4 align-top" @click.stop="goToProduct(product)">
+                  <div class="font-bold text-[#2962ff] dark:text-blue-400 text-sm md:text-base mb-0.5 leading-tight">{{ product.name }}</div>
                   <div class="text-[11px] text-slate-500 dark:text-slate-400 max-w-sm leading-relaxed truncate">{{ product.description || 'Standard specification applicable for general use.' }}</div>
                   <div class="md:hidden mt-2 text-xs text-slate-500 dark:text-slate-400">
                     <span class="font-bold text-slate-700 dark:text-slate-300 mr-2">{{ product.grade || '--' }}</span>
@@ -143,7 +126,7 @@
                   </span>
                   <span v-else>Bags, Totes, Bulk Truck</span>
                 </td>
-                <td class="py-4 px-4 align-top text-right min-w-[150px] md:min-w-[200px]">
+                <td class="py-4 px-4 align-top text-right min-w-[150px] md:min-w-[200px]" @click.stop>
                   <div class="flex items-center justify-end gap-1.5 md:gap-2 flex-wrap">
                     <button v-if="product.tds_document_path" @click.prevent="previewDocument(product.id, 'tds')" class="bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600 text-[9px] font-bold px-2 py-1.5 uppercase tracking-wider rounded shrink-0">TDS</button>
                     <button v-if="product.sds_document_path" @click.prevent="previewDocument(product.id, 'sds')" class="bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600 text-[9px] font-bold px-2 py-1.5 uppercase tracking-wider rounded shrink-0">SDS</button>
@@ -177,10 +160,10 @@ import api from '../../services/api';
 import PageLoader from '../../components/ui/PageLoader.vue';
 
 const props = defineProps({
-  searchQuery: {
-    type: String,
-    default: ''
-  }
+  searchQuery: { type: String, default: '' },
+  categorySlug: { type: String, default: null },
+  categoryParentSlug: { type: String, default: null },
+  categoryChildSlug: { type: String, default: null }
 });
 
 const router = useRouter();
@@ -192,12 +175,27 @@ const selectedCategory = ref(null);
 const currentView = ref('grid');
 const isMounted = ref(false);
 const hasMobileCategoriesTarget = ref(false);
+/** Full category list for sidebar (from API), so it doesn't disappear when viewing a category hub */
+const sidebarCategoriesFromApi = ref([]);
 
 const isClient = computed(() => {
   return !!authStore.token && (!authStore.user?.roles || !authStore.user.roles.some((r) => r.name === 'admin'));
 });
 
 const apiBaseUrl = api.defaults.baseURL || '';
+
+function goToProduct(product) {
+  const inApp = route.path.startsWith('/app');
+  const name = inApp ? 'AppProductDetail' : 'ProductDetail';
+  const slug = product.slug || String(product.id);
+  router.push({ name, params: { slug } });
+}
+
+function productDetailRoute(product) {
+  const inApp = route.path.startsWith('/app');
+  const slug = product.slug || String(product.id);
+  return { name: inApp ? 'AppProductDetail' : 'ProductDetail', params: { slug } };
+}
 
 function requestQuoteRoute(product) {
   const inApp = route.path.startsWith('/app');
@@ -216,8 +214,25 @@ const allCategories = computed(() => {
       if (!map.has(c.id)) map.set(c.id, c);
     });
   });
-  return Array.from(map.values()).sort((a, b) => a.label.localeCompare(b.label));
+  return Array.from(map.values()).sort((a, b) => (a.label || '').localeCompare(b.label || ''));
 });
+
+const inApp = computed(() => route.path.startsWith('/app'));
+
+const catalogRootLink = computed(() =>
+  inApp.value ? { name: 'AppCatalog' } : { name: 'Catalog' }
+);
+
+function categoryHubLink(cat) {
+  const slug = cat?.slug || cat?.label?.toLowerCase?.()?.replace(/\s+/g, '-') || String(cat?.id);
+  return inApp.value
+    ? { name: 'AppCategoryHub', params: { categorySlug: slug } }
+    : { name: 'CategoryHub', params: { categorySlug: slug } };
+}
+
+const sidebarCategoriesWithLinks = computed(() =>
+  sidebarCategoriesFromApi.value.map(c => ({ ...c, link: categoryHubLink(c) }))
+);
 
 const filteredProducts = computed(() => {
   let list = products.value;
@@ -260,8 +275,12 @@ const selectCategory = (cat) => {
 const fetchProducts = async () => {
   loading.value = true;
   try {
-    const response = await api.get('/api/v1/catalog/products');
-    const items = response.data.data || response.data;
+    const categorySlugParam = props.categoryChildSlug || props.categorySlug;
+    const url = categorySlugParam
+      ? `/api/v1/catalog/products?category_slug=${encodeURIComponent(categorySlugParam)}`
+      : '/api/v1/catalog/products';
+    const response = await api.get(url);
+    const items = response.data.data ?? response.data;
     products.value = items.map(p => {
       const defaultPackagingId = p.packaging_options?.length > 0 
         ? p.packaging_options[0].packaging_type_id 
@@ -281,16 +300,57 @@ const fetchProducts = async () => {
   }
 };
 
+function flattenCategoriesTree(tree) {
+  if (!Array.isArray(tree)) return [];
+  const out = [];
+  for (const node of tree) {
+    out.push({ id: node.id, label: node.label, slug: node.slug });
+    if (node.children?.length) out.push(...flattenCategoriesTree(node.children));
+  }
+  return out.sort((a, b) => (a.label || '').localeCompare(b.label || ''));
+}
+
+async function fetchSidebarCategories() {
+  try {
+    const { data } = await api.get('/api/v1/catalog/categories');
+    const raw = data?.data ?? data;
+    sidebarCategoriesFromApi.value = flattenCategoriesTree(Array.isArray(raw) ? raw : []);
+  } catch (e) {
+    console.error('Failed to load sidebar categories', e);
+    sidebarCategoriesFromApi.value = [];
+  }
+}
+
 onMounted(() => {
   isMounted.value = true;
   hasMobileCategoriesTarget.value = !!document.getElementById('mobile-catalog-categories');
+  fetchSidebarCategories();
   fetchProducts();
 });
+
+// Category hub from route (/:categorySlug or /:parent/:child)
+watch(
+  () => [props.categorySlug, props.categoryChildSlug, products.value.length, sidebarCategoriesFromApi.value.length],
+  ([slug, childSlug]) => {
+    const useSlug = childSlug || slug;
+    if (!useSlug) {
+      if (!props.categorySlug && !props.categoryChildSlug) selectedCategory.value = null;
+      return;
+    }
+    const cat = sidebarCategoriesFromApi.value.find(c => (c.slug || '').toLowerCase() === (useSlug || '').toLowerCase());
+    if (cat) {
+      selectedCategory.value = cat;
+      currentView.value = 'list';
+    }
+  },
+  { immediate: true }
+);
 
 // Open in list view with category when coming from Home with ?categoryId=
 watch(
   () => [route.query.categoryId, products.value.length],
   ([categoryId]) => {
+    if (props.categorySlug || props.categoryChildSlug) return;
     const id = categoryId ? Number(categoryId) : null;
     if (!id || !products.value.length) return;
     const cat = allCategories.value.find(c => c.id === id);

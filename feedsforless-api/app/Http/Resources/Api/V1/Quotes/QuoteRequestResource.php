@@ -17,7 +17,14 @@ class QuoteRequestResource extends JsonResource
             'requires_liftgate' => (bool) $this->requires_liftgate,
             'requires_appointment' => (bool) $this->requires_appointment,
             'total_estimated_cost' => $this->total_estimated_cost,
-            'customer_name' => $this->whenLoaded('requester', fn () => trim($this->requester->first_name . ' ' . $this->requester->last_name) ?: $this->requester->email),
+            'customer_name' => $this->request_by_id
+                ? $this->whenLoaded('requester', fn () => trim($this->requester->first_name . ' ' . $this->requester->last_name) ?: $this->requester->email)
+                : ($this->guest_contact_name ?: $this->guest_email),
+            'guest_email' => $this->guest_email,
+            'guest_company_name' => $this->guest_company_name,
+            'guest_contact_name' => $this->guest_contact_name,
+            'guest_phone' => $this->guest_phone,
+            'guest_destination_address' => $this->guest_destination_address,
             'requester' => $this->whenLoaded('requester', fn () => [
                 'id' => $this->requester->id,
                 'email' => $this->requester->email,

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Domains\Catalog\Models\Product;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Api\V1\ProductResource;
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Storage;
@@ -12,21 +13,44 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class CatalogController extends Controller
 {
-    public function index(): AnonymousResourceCollection
+    public function index(Request $request): AnonymousResourceCollection
     {
-        $products = Product::where('status', 'published')->with(['categories', 'packaging.packagingType'])->paginate(15);
+        $query = Product::where('status', 'published')->with(['categories', 'packaging.packagingType']);
+
+        if ($request->filled('category_slug')) {
+            $query->whereHas('categories', fn ($q) => $q->where('slug', $request->category_slug));
+        }
+
+        $products = $query->paginate(15);
 
         return ProductResource::collection($products);
     }
 
     /**
-     * Single product for catalog (same structure as list; only published).
+     * Single product by ID (for backward compatibility).
      */
     public function show(int $id): ProductResource|JsonResponse
     {
         $model = Product::where('status', 'published')
-            ->with(['categories', 'packaging.packagingType'])
+            ->with(['categories', 'packaging.packagingType', 'typicalApplications'])
             ->find($id);
+
+        if (!$model) {
+            return response()->json(['message' => 'Product not found'], 404);
+        }
+
+        return new ProductResource($model);
+    }
+
+    /**
+     * Single product by slug (canonical product page).
+     */
+    public function showBySlug(string $slug): ProductResource|JsonResponse
+    {
+        $model = Product::where('status', 'published')
+            ->where('slug', $slug)
+            ->with(['categories', 'packaging.packagingType', 'typicalApplications'])
+            ->first();
 
         if (!$model) {
             return response()->json(['message' => 'Product not found'], 404);

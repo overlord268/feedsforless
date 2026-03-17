@@ -37,12 +37,15 @@ Route::prefix('v1')->group(function () {
 
     Route::get('/catalog/categories', [CategoryController::class, 'index']);    
     Route::get('/catalog/products', [CatalogController::class, 'index']);
+    Route::get('/catalog/products/by-slug/{slug}', [CatalogController::class, 'showBySlug'])->where('slug', '[a-z0-9\-]+');
     Route::get('/catalog/products/{id}', [CatalogController::class, 'show'])->whereNumber('id');
     Route::get('/catalog/products/{product}/documents/{type}', [CatalogController::class, 'document'])->where('type', 'tds|sds|coa');
 
     Route::post('/rfq-list/items', [RfqListController::class, 'addItem']);
     Route::get('/rfq-list', [RfqListController::class, 'show']);
     Route::delete('/rfq-list/items/{itemId}', [RfqListController::class, 'removeItem']);
+
+    Route::post('/quote-requests/guest', [QuoteRequestController::class, 'submitGuest']);
 
     Route::middleware('auth:sanctum')->group(function () {
         

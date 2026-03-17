@@ -3,22 +3,23 @@
     <aside class="w-full md:w-60 shrink-0">
       <div class="mb-8">
         <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 px-2">Categories</h3>
-        <nav class="flex flex-col space-y-0.5">
+        <nav v-if="sidebarCategories.length" class="flex flex-col space-y-0.5">
           <router-link
-            :to="backToCatalogLink"
-            class="text-left px-2 py-2 text-sm font-medium transition-colors border-l-4 text-slate-600 border-transparent hover:text-slate-900"
+            :to="catalogLink"
+            class="text-left px-2 py-2 text-sm font-medium transition-colors border-l-4 border-transparent text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
           >
             All Commodities
           </router-link>
           <router-link
-            v-for="cat in allCategories"
+            v-for="cat in sidebarCategories"
             :key="cat.id"
-            :to="{ name: backToCatalogLink.name, query: { categoryId: cat.id } }"
-            class="text-left px-2 py-2 text-sm font-medium transition-colors border-l-4 text-slate-600 border-transparent hover:text-slate-900"
+            :to="{ name: catalogLink.name, query: { categoryId: cat.id } }"
+            class="text-left px-2 py-2 text-sm font-medium transition-colors border-l-4 border-transparent text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
           >
             {{ cat.label }}
           </router-link>
         </nav>
+        <div v-else class="px-2 py-3 text-xs text-slate-400">Loading categories…</div>
       </div>
       <!-- <div class="px-6 mb-8 mt-4 border-t border-slate-200 pt-6">
         <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Resources</h3>
@@ -32,7 +33,7 @@
     </aside>
 
     <main class="flex-1 w-full bg-white relative p-6 lg:p-10">
-      <div class="mb-6">
+      <div v-if="!submittedSuccess" class="mb-6">
         <router-link
           :to="backToCatalogLink"
           class="text-[11px] font-bold text-[#2962ff] hover:text-blue-800 uppercase tracking-wider flex items-center gap-1"
@@ -97,25 +98,6 @@
             </div>
             <div class="border border-slate-200 px-3 py-1 bg-slate-50">
               <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">RFQ ID: {{ rfqId }}</span>
-            </div>
-          </div>
-
-          <!-- Require login to submit -->
-          <div v-if="!isLoggedIn" class="mb-6 p-4 bg-amber-50 border-l-4 border-amber-500 text-amber-900">
-            <p class="text-sm font-bold mb-3">You must sign in or create an account to submit this quote request.</p>
-            <div class="flex flex-wrap gap-3">
-              <router-link
-                :to="{ name: 'Login', query: { redirect: $route.fullPath } }"
-                class="inline-block bg-[#2962ff] text-white font-bold text-[11px] uppercase tracking-wider px-4 py-2 hover:bg-blue-800"
-              >
-                Sign in
-              </router-link>
-              <router-link
-                :to="{ name: 'Register' }"
-                class="inline-block border-2 border-[#2962ff] text-[#2962ff] font-bold text-[11px] uppercase tracking-wider px-4 py-2 hover:bg-[#f5f8ff]"
-              >
-                Create account
-              </router-link>
             </div>
           </div>
 
@@ -205,7 +187,7 @@
               <router-link :to="backToCatalogLink" class="min-h-[44px] min-w-[44px] inline-flex items-center justify-center text-[11px] font-bold text-slate-500 uppercase tracking-wider hover:text-slate-800 transition-colors touch-manipulation">Cancel</router-link>
               <button
                 type="button"
-                :disabled="!isLoggedIn || isAdmin || submitting"
+                :disabled="isAdmin || submitting"
                 @click="submitQuote"
                 :title="isAdmin ? 'Administrators cannot submit quote requests.' : ''"
                 class="min-h-[44px] px-8 py-3.5 bg-[#2962ff] text-white font-bold text-[11px] uppercase tracking-wider hover:bg-blue-800 transition-colors disabled:opacity-60 disabled:cursor-not-allowed touch-manipulation"
@@ -270,28 +252,47 @@ const packagingOptions = computed(() => {
 
 const backToCatalogLink = computed(() => {
   const inApp = route.path.startsWith('/app');
-  return { name: inApp ? 'AppCatalog' : 'Catalog', query: product.value ? {} : {} };
-});
-
-const allProducts = ref([]);
-const allCategories = computed(() => {
-  const map = new Map();
-  allProducts.value.forEach(p => {
-    (p.categories || []).forEach(c => {
-      if (!map.has(c.id)) map.set(c.id, c);
-    });
-  });
-  return Array.from(map.values()).sort((a, b) => a.label.localeCompare(b.label));
-});
-
-const fetchAllProducts = async () => {
-  try {
-    const { data } = await api.get('/api/v1/catalog/products');
-    allProducts.value = data?.data ?? data;
-  } catch (e) {
-    console.error('Failed to load categories', e);
+  if (product.value?.slug) {
+    return inApp
+      ? { name: 'AppProductDetail', params: { slug: product.value.slug } }
+      : { name: 'ProductDetail', params: { slug: product.value.slug } };
   }
-};
+  if (product.value?.id) {
+    return inApp
+      ? { name: 'AppProductDetail', params: { slug: String(product.value.id) } }
+      : { name: 'ProductDetail', params: { slug: String(product.value.id) } };
+  }
+  return { name: inApp ? 'AppCatalog' : 'Catalog', query: {} };
+});
+
+/** Sidebar: always link to Catalog (not ProductDetail) so "All Commodities" works */
+const catalogLink = computed(() => {
+  const inApp = route.path.startsWith('/app');
+  return { name: inApp ? 'AppCatalog' : 'Catalog', query: {} };
+});
+
+const sidebarCategories = ref([]);
+
+function flattenCategories(tree) {
+  if (!Array.isArray(tree)) return [];
+  const out = [];
+  for (const node of tree) {
+    out.push({ id: node.id, label: node.label, slug: node.slug });
+    if (node.children?.length) out.push(...flattenCategories(node.children));
+  }
+  return out.sort((a, b) => (a.label || '').localeCompare(b.label || ''));
+}
+
+async function fetchSidebarCategories() {
+  try {
+    const { data } = await api.get('/api/v1/catalog/categories');
+    const raw = data?.data ?? data;
+    sidebarCategories.value = flattenCategories(Array.isArray(raw) ? raw : []);
+  } catch (e) {
+    console.error('Failed to load sidebar categories', e);
+    sidebarCategories.value = [];
+  }
+}
 
 const returnToPortalLink = computed(() => {
   if (route.path.startsWith('/app')) {
@@ -328,18 +329,36 @@ async function fetchProduct() {
 }
 
 watch(() => props.productId, fetchProduct, { immediate: true });
+
+// Prefill from ProductDetail (route query)
+watch(
+  () => route.query,
+  (q) => {
+    if (q.quantity != null) form.quantity = Number(q.quantity) || 24;
+    if (q.packaging_type_id != null) form.packaging_type_id = Number(q.packaging_type_id) || null;
+    if (q.delivery_zip != null) form.delivery_zip = String(q.delivery_zip).trim() || form.delivery_zip;
+    if (q.requires_liftgate === '1' || q.requires_liftgate === 'true') form.requires_liftgate = true;
+  },
+  { immediate: true }
+);
+
 onMounted(() => {
-  fetchAllProducts();
+  fetchSidebarCategories();
   if (authStore.user) {
     form.legal_name = authStore.user.company_name || form.legal_name;
     form.contact_name = form.contact_name || [authStore.user.first_name, authStore.user.last_name].filter(Boolean).join(' ') || authStore.user.name || '';
     form.email = authStore.user.email || form.email;
     form.phone = authStore.user.phone || form.phone;
   }
+  const q = route.query;
+  if (q.quantity != null) form.quantity = Number(q.quantity) || 24;
+  if (q.packaging_type_id != null) form.packaging_type_id = Number(q.packaging_type_id) || null;
+  if (q.delivery_zip != null) form.delivery_zip = String(q.delivery_zip).trim() || form.delivery_zip;
+  if (q.requires_liftgate === '1' || q.requires_liftgate === 'true') form.requires_liftgate = true;
 });
 
 async function submitQuote() {
-  if (!isLoggedIn.value || isAdmin.value || !product.value) return;
+  if (isAdmin.value || !product.value) return;
   if (!form.quantity || form.quantity < 1) {
     toast.error('Enter a valid request volume.');
     return;
@@ -353,25 +372,58 @@ async function submitQuote() {
     toast.error('Destination zip code is required.');
     return;
   }
+  if (!isLoggedIn.value) {
+    if (!form.email || !form.email.trim()) {
+      toast.error('Business email is required.');
+      return;
+    }
+    if (!form.legal_name || !form.legal_name.trim()) {
+      toast.error('Legal business name is required.');
+      return;
+    }
+    if (!form.contact_name || !form.contact_name.trim()) {
+      toast.error('Authorized procurement contact is required.');
+      return;
+    }
+    if (!form.phone || !form.phone.trim()) {
+      toast.error('Primary phone is required.');
+      return;
+    }
+  }
   submitting.value = true;
   try {
-    const addRes = await api.post('/api/v1/rfq-list/items', {
-      product_id: product.value.id,
-      packaging_type_id: packagingId,
-      quantity: form.quantity
-    });
-    const rfqListId = addRes.data?.data?.id;
-    if (!rfqListId) {
-      throw new Error('Could not get RFQ list id');
+    if (isLoggedIn.value) {
+      const addRes = await api.post('/api/v1/rfq-list/items', {
+        product_id: product.value.id,
+        packaging_type_id: packagingId,
+        quantity: form.quantity
+      });
+      const rfqListId = addRes.data?.data?.id;
+      if (!rfqListId) throw new Error('Could not get RFQ list id');
+      await api.post('/api/v1/quote-requests', {
+        rfq_list_id: rfqListId,
+        delivery_zip: form.delivery_zip.trim(),
+        requires_liftgate: !!form.requires_liftgate,
+        requires_appointment: !!form.requires_appointment
+      });
+    } else {
+      await api.post('/api/v1/quote-requests/guest', {
+        product_id: product.value.id,
+        packaging_type_id: packagingId,
+        quantity: form.quantity,
+        delivery_zip: form.delivery_zip.trim(),
+        destination_address: form.destination_address?.trim() || null,
+        requires_liftgate: !!form.requires_liftgate,
+        requires_appointment: !!form.requires_appointment,
+        email: form.email.trim(),
+        legal_name: form.legal_name.trim(),
+        contact_name: form.contact_name.trim(),
+        phone: form.phone.trim(),
+        tax_id: form.tax_id?.trim() || null
+      });
     }
-    await api.post('/api/v1/quote-requests', {
-      rfq_list_id: rfqListId,
-      delivery_zip: form.delivery_zip.trim(),
-      requires_liftgate: !!form.requires_liftgate,
-      requires_appointment: !!form.requires_appointment
-    });
     submittedProductName.value = product.value?.name || '';
-    submittedEmail.value = form.email || authStore.user?.email || '';
+    submittedEmail.value = form.email?.trim() || authStore.user?.email || '';
     submittedSuccess.value = true;
   } catch (err) {
     console.error(err);

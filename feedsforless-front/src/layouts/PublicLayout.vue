@@ -51,9 +51,11 @@
       <div class="w-full h-1 bg-green-700"></div>
     </header>
 
-    <!-- Base view -->
+    <!-- Base view: key by route so navigation always switches view (avoids "stuck" on Request Quote) -->
     <main class="flex-1 w-full flex flex-col pt-0 overflow-y-auto overflow-x-hidden min-h-0 bg-white dark:bg-slate-900">
-      <router-view :search-query="debouncedSearch"></router-view>
+      <div class="flex-1 flex flex-col min-h-0">
+        <router-view :key="$route.fullPath" :search-query="debouncedSearch"></router-view>
+      </div>
     </main>
 
     <!-- Mobile Menu Overlay -->
