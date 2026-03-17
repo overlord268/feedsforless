@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Str;
 use App\Domains\Catalog\Models\Category;
 use App\Domains\Catalog\Models\Product;
 
@@ -23,6 +24,7 @@ class CatalogSeeder extends Seeder
         $urea = Product::create([
             'sku' => 'UR-46-00-00',
             'name' => 'Urea 46-0-0',
+            'slug' => Str::slug('Urea 46-0-0'),
             'grade' => 'Agricultural',
             'description' => 'High quality solid nitrogen fertilizer.',
             'stock_status' => 'in_stock',
@@ -35,6 +37,7 @@ class CatalogSeeder extends Seeder
         $calcium = Product::create([
             'sku' => 'CA-FEED-100',
             'name' => 'Calcium Carbonate',
+            'slug' => Str::slug('Calcium Carbonate'),
             'grade' => 'Feed Grade',
             'description' => 'Essential calcium supplement for livestock.',
             'stock_status' => 'call',

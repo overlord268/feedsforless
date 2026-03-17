@@ -45,6 +45,7 @@ class InitialProductsSeeder extends Seeder
             ['name' => $productName],
             [
                 'sku' => strtoupper(Str::slug($productName)) . '-185',
+                'slug' => Str::slug($productName),
                 'grade' => '18.50%',
                 'sds_document_path' => $sdsPath,
                 'tds_document_path' => $tdsPath,
@@ -82,6 +83,7 @@ class InitialProductsSeeder extends Seeder
             ['name' => $monoProductName],
             [
                 'sku' => strtoupper(Str::slug($monoProductName)) . '-227',
+                'slug' => Str::slug($monoProductName),
                 'grade' => '22.70%',
                 'sds_document_path' => $mono_sdsPath,
                 'tds_document_path' => $mono_tdsPath,
@@ -112,6 +114,7 @@ class InitialProductsSeeder extends Seeder
             ['name' => $mondiProductName],
             [
                 'sku' => strtoupper(Str::slug($mondiProductName)) . '-21',
+                'slug' => Str::slug($mondiProductName),
                 'grade' => '21%',
                 'sds_document_path' => $mondi_sdsPath,
                 'tds_document_path' => $mondi_tdsPath,
@@ -155,6 +158,7 @@ class InitialProductsSeeder extends Seeder
             ['name' => $mag1ProductName],
             [
                 'sku' => 'MAG-OX-54-0320',
+                'slug' => Str::slug($mag1ProductName),
                 'grade' => '54% MgO (0.3–2.0 mm)',
                 'sds_document_path' => $mag1_sdsPath,
                 'tds_document_path' => $mag1_tdsPath,
@@ -182,6 +186,7 @@ class InitialProductsSeeder extends Seeder
             ['name' => $mag2ProductName],
             [
                 'sku' => 'MAG-OX-54-0830',
+                'slug' => Str::slug($mag2ProductName),
                 'grade' => '54% MgO (0.8–3.0 mm)',
                 'sds_document_path' => $mag2_sdsPath,
                 'tds_document_path' => $mag1_tdsPath,
@@ -219,6 +224,7 @@ class InitialProductsSeeder extends Seeder
             ['name' => $mag3ProductName],
             [
                 'sku' => 'MAG-OX-HR95',
+                'slug' => Str::slug($mag3ProductName),
                 'grade' => 'HR 95 Block Grade',
                 'sds_document_path' => $mag3_sdsPath,
                 'tds_document_path' => $mag3_tdsPath,
@@ -262,6 +268,7 @@ class InitialProductsSeeder extends Seeder
             ['name' => $ureaProductName],
             [
                 'sku' => 'UREA-FG',
+                'slug' => Str::slug($ureaProductName),
                 'grade' => 'Feed Grade',
                 'sds_document_path' => $urea_sdsPath,
                 'tds_document_path' => $urea_tdsPath,
