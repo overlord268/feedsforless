@@ -54,6 +54,6 @@ watch(() => route.path, () => { sidebarOpen.value = false; });
 
 const isAdmin = computed(() => {
   if (!authStore.user || !authStore.user.roles) return false;
-  return authStore.user.roles.some(role => role.name === 'admin');
+  return authStore.user.roles.some(role => ['admin', 'Admin', 'Super Admin'].includes(role.name));
 });
 </script>

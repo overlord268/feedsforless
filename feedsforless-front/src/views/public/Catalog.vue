@@ -179,7 +179,7 @@ const hasMobileCategoriesTarget = ref(false);
 const sidebarCategoriesFromApi = ref([]);
 
 const isClient = computed(() => {
-  return !!authStore.token && (!authStore.user?.roles || !authStore.user.roles.some((r) => r.name === 'admin'));
+  return !!authStore.token && (!authStore.user?.roles || !authStore.user.roles.some((r) => ['admin', 'Admin', 'Super Admin'].includes(r.name)));
 });
 
 const apiBaseUrl = api.defaults.baseURL || '';

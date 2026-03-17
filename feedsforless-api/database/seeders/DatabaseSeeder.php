@@ -23,11 +23,16 @@ class DatabaseSeeder extends Seeder
             ]);
         }
         
-        // Add any other seeders you need to call here
         $this->call([
             RolesAndPermissionsSeeder::class,
             CatalogSeeder::class,
             InitialProductsSeeder::class,
         ]);
+
+        // Assign Super Admin role to the admin user (existing or just created)
+        $admin = User::where('email', 'admin@feedsforless.com')->first();
+        if ($admin && !$admin->hasRole('Super Admin')) {
+            $admin->assignRole('Super Admin');
+        }
     }
 }
