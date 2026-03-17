@@ -25,6 +25,7 @@ class SubmitGuestQuoteRequestAction
                 'guest_contact_name' => $dto->contactName,
                 'guest_phone' => $dto->phone,
                 'guest_destination_address' => $dto->destinationAddress,
+                'guest_tax_id' => $dto->taxId,
                 'target_address_id' => null,
                 'delivery_zip' => $dto->deliveryZip,
                 'requires_liftgate' => $dto->requiresLiftgate,

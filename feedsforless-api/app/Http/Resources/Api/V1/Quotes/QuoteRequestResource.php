@@ -25,18 +25,35 @@ class QuoteRequestResource extends JsonResource
             'guest_contact_name' => $this->guest_contact_name,
             'guest_phone' => $this->guest_phone,
             'guest_destination_address' => $this->guest_destination_address,
-            'requester' => $this->whenLoaded('requester', fn () => [
-                'id' => $this->requester->id,
-                'email' => $this->requester->email,
-                'first_name' => $this->requester->first_name,
-                'last_name' => $this->requester->last_name,
-                'phone' => $this->requester->phone,
-                'job_title' => $this->requester->job_title,
-                'company_name' => $this->requester->relationLoaded('company') && $this->requester->company 
-                    ? $this->requester->company->name : null,
-                'tax_id' => $this->requester->relationLoaded('company') && $this->requester->company 
-                    ? $this->requester->company->tax_registration_number : null,
-            ]),
+            'guest_tax_id' => $this->guest_tax_id ?? null,
+            'requester' => $this->whenLoaded('requester', function () {
+                if ($this->requester) {
+                    return [
+                        'id' => $this->requester->id,
+                        'email' => $this->requester->email,
+                        'first_name' => $this->requester->first_name,
+                        'last_name' => $this->requester->last_name,
+                        'phone' => $this->requester->phone,
+                        'job_title' => $this->requester->job_title,
+                        'company_name' => $this->requester->relationLoaded('company') && $this->requester->company
+                            ? $this->requester->company->name : null,
+                        'tax_id' => $this->requester->relationLoaded('company') && $this->requester->company
+                            ? $this->requester->company->tax_registration_number : null,
+                    ];
+                }
+                // Guest RFQ: expose guest fields in same shape so frontend can show Corporate Entity Profile
+                return [
+                    'id' => null,
+                    'email' => $this->guest_email,
+                    'first_name' => null,
+                    'last_name' => null,
+                    'contact_name' => $this->guest_contact_name,
+                    'phone' => $this->guest_phone,
+                    'job_title' => null,
+                    'company_name' => $this->guest_company_name,
+                    'tax_id' => $this->guest_tax_id ?? null,
+                ];
+            }),
             'items' => QuoteRequestItemResource::collection($this->whenLoaded('items')),
         ];
     }

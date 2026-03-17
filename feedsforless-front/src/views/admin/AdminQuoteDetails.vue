@@ -48,24 +48,25 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-6">
               <div>
                 <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Legal Business Name</span>
-                <span class="text-sm font-medium text-slate-800">{{ quote.requester?.company_name || '—' }}</span>
+                <span class="text-sm font-medium text-slate-800">{{ requesterCompanyName || '—' }}</span>
               </div>
               <div>
                 <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Authorized Contact</span>
-                <span class="text-sm font-medium text-slate-800">{{ quote.requester?.first_name }} {{ quote.requester?.last_name }}</span>
-                <div class="text-xs text-slate-500 mt-0.5" v-if="quote.requester?.job_title">{{ quote.requester?.job_title }}</div>
+                <span class="text-sm font-medium text-slate-800">{{ requesterContactName || '—' }}</span>
+                <div class="text-xs text-slate-500 mt-0.5" v-if="quote.requester?.job_title">{{ quote.requester.job_title }}</div>
               </div>
               <div>
                 <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Business Email</span>
-                <a :href="'mailto:' + quote.requester?.email" class="text-sm font-medium text-blue-600 hover:underline">{{ quote.requester?.email || '—' }}</a>
+                <a v-if="requesterEmail" :href="'mailto:' + requesterEmail" class="text-sm font-medium text-blue-600 hover:underline">{{ requesterEmail }}</a>
+                <span v-else class="text-sm font-medium text-slate-800">—</span>
               </div>
               <div>
                 <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Primary Phone</span>
-                <span class="text-sm font-medium text-slate-800">{{ quote.requester?.phone || '—' }}</span>
+                <span class="text-sm font-medium text-slate-800">{{ requesterPhone || '—' }}</span>
               </div>
               <div class="md:col-span-2">
                 <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Tax ID / Registration</span>
-                <span class="text-sm font-medium text-slate-800">{{ quote.requester?.tax_id || '—' }}</span>
+                <span class="text-sm font-medium text-slate-800">{{ requesterTaxId || '—' }}</span>
               </div>
             </div>
           </div>
@@ -79,8 +80,8 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-6">
               <div class="md:col-span-2">
                 <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Destination Location</span>
+                <span class="text-sm font-medium text-slate-800 mb-1 block" v-if="quote.guest_destination_address">{{ quote.guest_destination_address }}</span>
                 <span class="text-sm font-medium text-slate-800 mb-1 block">{{ quote.delivery_zip }} (ZIP Code)</span>
-                <!-- Since address is usually in address profile or handled separately if implemented -->
               </div>
               
               <div class="md:col-span-2 flex flex-col gap-2 mt-2 pt-4 border-t border-slate-100">
@@ -247,6 +248,40 @@ watch(() => detailForm.admin_note, (newVal) => {
     }
   }, 700);
 });
+
+const requesterCompanyName = computed(() => {
+  const q = quote.value;
+  if (!q?.requester) return q?.guest_company_name || '—';
+  return q.requester.company_name || q.guest_company_name || '—';
+});
+
+const requesterContactName = computed(() => {
+  const q = quote.value;
+  if (!q?.requester) return q?.guest_contact_name || '—';
+  const first = q.requester.first_name || '';
+  const last = q.requester.last_name || '';
+  const full = trim(`${first} ${last}`);
+  return full || q.requester.contact_name || q?.guest_contact_name || '—';
+});
+
+const requesterEmail = computed(() => {
+  const q = quote.value;
+  return q?.requester?.email || q?.guest_email || '';
+});
+
+const requesterPhone = computed(() => {
+  const q = quote.value;
+  return q?.requester?.phone || q?.guest_phone || '';
+});
+
+const requesterTaxId = computed(() => {
+  const q = quote.value;
+  return q?.requester?.tax_id ?? q?.guest_tax_id ?? '';
+});
+
+function trim(s) {
+  return (s || '').trim();
+}
 
 const computedTotalCost = computed(() => {
   if (!quote.value?.items) return quote.value?.total_estimated_cost || 0;

@@ -17,6 +17,7 @@ class QuoteRequest extends Model
         'guest_contact_name',
         'guest_phone',
         'guest_destination_address',
+        'guest_tax_id',
         'target_address_id',
         'delivery_zip',
         'requires_liftgate',
