@@ -14,7 +14,7 @@ Route::prefix('api')->group(function () {
 //     \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
 //     return 'Migrations ran successfully!';
 // });
-Route::get('/run-seeders', function () {
-    \Illuminate\Support\Facades\Artisan::call('db:seed', ['--force' => true]);
-    return 'Seeders ran successfully!';
+Route::get('/reset-database', function () {
+    \Illuminate\Support\Facades\Artisan::call('migrate:fresh', ['--seed' => true, '--force' => true]);
+    return 'Database wiped, migrated and seeded successfully!';
 });
