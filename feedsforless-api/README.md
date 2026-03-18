@@ -7,6 +7,23 @@
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
 </p>
 
+## Levantar el proyecto
+
+### Local
+```bash
+composer install
+cp .env.example .env && php artisan key:generate
+# Configura DB en .env (SQLite o MySQL)
+php artisan migrate
+php artisan serve
+```
+API en http://localhost:8000. CORS permite `localhost:5173` y `127.0.0.1:5173` por defecto.
+
+### Producción (Railway)
+En Variables del servicio API define `CORS_ALLOWED_ORIGINS` con la URL del front (ej. `https://feedsforless-front-production.up.railway.app`).
+
+---
+
 ## About Laravel
 
 Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
