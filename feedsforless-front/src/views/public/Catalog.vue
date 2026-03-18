@@ -1,55 +1,16 @@
 <template>
   <div class="flex flex-col md:flex-row w-full h-full min-h-0 bg-white dark:bg-slate-900">
-    <!-- Teleported Mobile Categories -->
-    <Teleport to="#mobile-catalog-categories" v-if="isMounted && hasMobileCategoriesTarget">
-      <div class="px-4 py-2 border-b border-slate-200 dark:border-slate-700">
-        <h2 class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3">Catalog Categories</h2>
-        <nav class="flex flex-col space-y-1">
-          <router-link
-            :to="catalogRootLink"
-            class="w-full text-left px-3 py-2 text-[13px] rounded-md transition-colors"
-            :class="!selectedCategory ? 'bg-[#2962ff] dark:bg-blue-600 text-white font-bold' : 'text-slate-600 dark:text-slate-300 font-medium hover:bg-slate-50 dark:hover:bg-slate-800'"
-          >
-            All Commodities
-          </router-link>
-          <router-link
-            v-for="cat in sidebarCategoriesWithLinks"
-            :key="cat.id"
-            :to="cat.link"
-            class="w-full text-left px-3 py-2 text-[13px] rounded-md transition-colors"
-            :class="selectedCategory && selectedCategory.id === cat.id ? 'bg-[#2962ff] dark:bg-blue-600 text-white font-bold' : 'text-slate-600 dark:text-slate-300 font-medium hover:bg-slate-50 dark:hover:bg-slate-800'"
-          >
-            {{ cat.label }}
-          </router-link>
-        </nav>
-      </div>
-    </Teleport>
-
-    <aside class="w-full md:w-64 shrink-0 border-r border-slate-200 dark:border-slate-700 bg-[#f8fafc]/50 dark:bg-slate-800/50 min-h-full flex flex-col pt-8 pb-8 px-4 z-10 hidden md:flex">
-      <div class="mb-8">
-        <h2 class="text-[11px] font-black text-slate-400/80 dark:text-slate-500 uppercase tracking-widest mb-4 px-2">Categories</h2>
-        <nav class="flex flex-col space-y-1">
-          <router-link :to="catalogRootLink" class="w-full text-left px-3 py-2 text-[13px] rounded-md transition-colors" :class="!selectedCategory ? 'bg-[#2962ff] dark:bg-blue-600 text-white font-bold' : 'text-slate-600 dark:text-slate-300 font-medium hover:text-[#2962ff] dark:hover:text-blue-400'">
-            All Commodities
-          </router-link>
-          <router-link v-for="cat in sidebarCategoriesWithLinks" :key="cat.id" :to="cat.link" class="w-full text-left px-3 py-2 text-[13px] rounded-md transition-colors" :class="selectedCategory && selectedCategory.id === cat.id ? 'bg-[#2962ff] dark:bg-blue-600 text-white font-bold' : 'text-slate-600 dark:text-slate-300 font-medium hover:text-[#2962ff] dark:hover:text-blue-400'">
-            {{ cat.label }}
-          </router-link>
-        </nav>
-      </div>
-      <!-- <div class="border-t border-slate-200/80 mb-8 mx-2"></div>
-      <div>
-        <h2 class="text-[11px] font-black text-slate-400/80 uppercase tracking-widest mb-4 px-2">Resources</h2>
-        <nav class="flex flex-col space-y-3 px-2 text-[13px]">
-          <a href="#" class="text-[#2962ff] hover:underline font-bold">Logistics Map</a>
-          <a href="#" class="text-[#2962ff] hover:underline font-bold">Bulk Volume Tiers</a>
-          <a href="#" class="text-[#2962ff] hover:underline font-bold">Tax Exemption Forms</a>
-          <a href="#" class="text-[#2962ff] hover:underline font-bold">Supplier Compliance</a>
-        </nav>
-      </div> -->
-    </aside>
+    <CatalogSidebar
+      :categories-with-links="sidebarCategoriesWithLinks"
+      :selected-category="selectedCategory"
+      :catalog-root-link="catalogRootLink"
+      teleport-target-id="mobile-catalog-categories"
+      :show-teleport="isMounted && hasMobileCategoriesTarget"
+    />
 
     <main class="flex-1 w-full bg-white dark:bg-slate-900 relative p-4 md:p-6 lg:p-10">
+      <AdminDemoBanner v-if="isAdminPreview" />
+
       <div v-if="currentView === 'grid'" class="animate-in fade-in duration-300">
         <h1 class="text-2xl md:text-3xl font-black italic text-[#003366] dark:text-blue-300 uppercase mb-1">Industrial Feed Commodity Catalog</h1>
         <p class="text-[10px] md:text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-8 border-b-[3px] border-slate-900 dark:border-slate-700 pb-4">Direct Supply Chain Portal | North American Distribution</p>
@@ -157,6 +118,8 @@ import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '../../stores/auth';
 import api from '../../services/api';
+import AdminDemoBanner from '../../components/ui/AdminDemoBanner.vue';
+import CatalogSidebar from '../../components/catalog/CatalogSidebar.vue';
 import PageLoader from '../../components/ui/PageLoader.vue';
 
 const props = defineProps({
@@ -180,6 +143,11 @@ const sidebarCategoriesFromApi = ref([]);
 
 const isClient = computed(() => {
   return !!authStore.token && (!authStore.user?.roles || !authStore.user.roles.some((r) => ['admin', 'Admin', 'Super Admin'].includes(r.name)));
+});
+
+/** True when an admin is viewing the catalog (preview of client experience). Show demo notice. */
+const isAdminPreview = computed(() => {
+  return !!authStore.token && !isClient.value;
 });
 
 const apiBaseUrl = api.defaults.baseURL || '';

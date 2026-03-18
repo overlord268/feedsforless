@@ -8,30 +8,24 @@
         </div>
 
         <form class="space-y-5" @submit.prevent="handleSubmit">
-          <div>
-            <label for="email" class="block text-sm font-medium text-slate-700 mb-1.5">Email</label>
-            <input
-              id="email"
-              v-model="form.email"
-              type="email"
-              required
-              autocomplete="email"
-              class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-[#2962ff]/30 focus:border-[#2962ff] transition-all"
-              placeholder="you@example.com"
-            />
-          </div>
-          <div>
-            <label for="password" class="block text-sm font-medium text-slate-700 mb-1.5">Password</label>
-            <input
-              id="password"
-              v-model="form.password"
-              type="password"
-              required
-              autocomplete="current-password"
-              class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-[#2962ff]/30 focus:border-[#2962ff] transition-all"
-              placeholder="••••••••"
-            />
-          </div>
+          <FormInput
+            id="email"
+            v-model="form.email"
+            label="Email"
+            type="email"
+            required
+            autocomplete="email"
+            placeholder="you@example.com"
+          />
+          <FormInput
+            id="password"
+            v-model="form.password"
+            label="Password"
+            type="password"
+            required
+            autocomplete="current-password"
+            placeholder="••••••••"
+          />
           <div v-if="errorMessage" class="text-red-600 text-sm text-center py-3 px-4 bg-red-50 rounded-xl border border-red-100">
             {{ errorMessage }}
           </div>
@@ -58,6 +52,7 @@ import { reactive, ref } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
 import { useToast } from '../composables/useToast';
+import FormInput from '../components/ui/FormInput.vue';
 
 const router = useRouter();
 const route = useRoute();
