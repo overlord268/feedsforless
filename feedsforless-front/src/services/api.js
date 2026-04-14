@@ -18,7 +18,7 @@ const getBaseURL = () => {
     if (typeof window !== 'undefined') {
         const host = window.location.hostname;
         if (host === 'localhost' || host === '127.0.0.1') return 'http://localhost:8000';
-        if (host === 'feedsforless-front-production.up.railway.app') return 'https://feedsforless-api-production.up.railway.app';
+        if (host === 'feedsforless-front-production-ab18.up.railway.app') return 'https://feedsforless-api-production-90a0.up.railway.app';
     }
 
     return 'http://localhost:8000';
