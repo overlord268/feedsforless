@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Domains\Catalog\Models\Product;
 use App\Http\Controllers\Controller;
-use App\Http\Resources\Api\V1\ProductResource;
+use App\Http\Resources\Api\V1\PublicProductResource;
 use Dedoc\Scramble\Attributes\QueryParameter;
 use Dedoc\Scramble\Attributes\Response;
 use Illuminate\Http\Request;
@@ -29,7 +29,7 @@ class CatalogController extends Controller
 
         $products = $query->paginate(15);
 
-        return ProductResource::collection($products);
+        return PublicProductResource::collection($products);
     }
 
     /**
@@ -37,7 +37,7 @@ class CatalogController extends Controller
      *
      * @unauthenticated
      */
-    public function show(int $id): ProductResource|JsonResponse
+    public function show(int $id): PublicProductResource|JsonResponse
     {
         $model = Product::where('status', 'published')
             ->with(['categories', 'packaging.packagingType', 'packaging.tiers', 'typicalApplications'])
@@ -47,7 +47,7 @@ class CatalogController extends Controller
             return response()->json(['message' => 'Product not found'], 404);
         }
 
-        return new ProductResource($model);
+        return new PublicProductResource($model);
     }
 
     /**
@@ -55,7 +55,7 @@ class CatalogController extends Controller
      *
      * @unauthenticated
      */
-    public function showBySlug(string $slug): ProductResource|JsonResponse
+    public function showBySlug(string $slug): PublicProductResource|JsonResponse
     {
         $model = Product::where('status', 'published')
             ->where('slug', $slug)
@@ -66,7 +66,7 @@ class CatalogController extends Controller
             return response()->json(['message' => 'Product not found'], 404);
         }
 
-        return new ProductResource($model);
+        return new PublicProductResource($model);
     }
 
     /**

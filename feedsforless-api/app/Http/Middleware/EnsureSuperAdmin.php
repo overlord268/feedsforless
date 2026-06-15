@@ -11,9 +11,9 @@ class EnsureSuperAdmin
     public function handle(Request $request, Closure $next): Response
     {
         $user = $request->user();
-        if (! $user || ! $user->hasRole('Super Admin')) {
+        if (! $user || ! $user->hasRole('admin')) {
             return response()->json([
-                'message' => 'Forbidden — Super Admin access required for this action.',
+                'message' => 'Forbidden — Admin access required for this action.',
             ], 403);
         }
 

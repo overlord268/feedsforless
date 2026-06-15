@@ -35,6 +35,7 @@ use App\Http\Controllers\Api\V1\Admin\AdminCatalogsController;
 use App\Http\Controllers\Api\V1\Admin\AdminRelatedProductController;
 use App\Http\Controllers\Api\V1\Admin\AdminAgentApiTokenController;
 use App\Http\Controllers\Api\V1\Admin\AdminFflSkuConfigController;
+use App\Http\Controllers\Api\V1\Admin\AdminProductPricingController;
 use App\Http\Controllers\Api\V1\MastersController;
 use App\Http\Controllers\Api\V1\AiProductController;
 use App\Http\Middleware\EnsureUserIsAdmin;
@@ -143,6 +144,14 @@ Route::prefix('v1')->group(function () {
 
             Route::apiResource('products.nutritional-analysis', AdminNutritionalAnalysisController::class)->only(['index', 'store', 'destroy']);
             Route::apiResource('products.related-products', AdminRelatedProductController::class)->only(['index', 'store', 'destroy']);
+
+            Route::prefix('pricing')->group(function () {
+                Route::get('margins', [AdminProductPricingController::class, 'showMargins']);
+                Route::put('margins/global', [AdminProductPricingController::class, 'updateGlobalMargin']);
+                Route::get('products', [AdminProductPricingController::class, 'indexProducts']);
+                Route::patch('products/{product}', [AdminProductPricingController::class, 'updateProductMargin']);
+                Route::patch('tiers/{tier}', [AdminProductPricingController::class, 'updateTierMargin']);
+            });
 
             Route::prefix('settings/ffl-sku')->group(function () {
                 Route::get('/', [AdminFflSkuConfigController::class, 'show']);

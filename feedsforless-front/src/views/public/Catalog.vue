@@ -142,7 +142,7 @@ const hasMobileCategoriesTarget = ref(false);
 const sidebarCategoriesFromApi = ref([]);
 
 const isClient = computed(() => {
-  return !!authStore.token && (!authStore.user?.roles || !authStore.user.roles.some((r) => ['admin', 'Admin', 'Super Admin'].includes(r.name)));
+  return !!authStore.token && (!authStore.user?.roles || !authStore.user.roles.some((r) => r.name === 'admin'));
 });
 
 /** True when an admin is viewing the catalog (preview of client experience). Show demo notice. */

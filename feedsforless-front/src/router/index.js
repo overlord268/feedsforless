@@ -168,6 +168,12 @@ const routes = [
                 meta: { requiresAdmin: true }
             },
             {
+                path: 'admin/products/pricing',
+                name: 'AdminProductPricing',
+                component: () => import('../views/admin/AdminProductPricing.vue'),
+                meta: { requiresAdmin: true }
+            },
+            {
                 path: 'admin/products/create',
                 name: 'AdminProductCreate',
                 component: () => import('../views/admin/ProductForm.vue'),
@@ -292,11 +298,10 @@ function isAdminRoute(to) {
     return to.matched.some((r) => r.meta && r.meta.requiresAdmin);
 }
 
-const ADMIN_ROLE_NAMES = ['admin', 'Admin', 'Super Admin'];
 function userIsAdmin(authStore) {
     const u = authStore.user;
     if (!u || !u.roles || !Array.isArray(u.roles)) return false;
-    return u.roles.some((r) => ADMIN_ROLE_NAMES.includes(r.name));
+    return u.roles.some((r) => r.name === 'admin');
 }
 
 router.beforeEach(async (to, from) => {

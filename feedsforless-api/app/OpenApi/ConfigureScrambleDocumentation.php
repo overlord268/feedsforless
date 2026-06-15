@@ -104,7 +104,7 @@ class ConfigureScrambleDocumentation
         if ($hasAdmin) {
             self::appendDescription(
                 $operation,
-                'Requires Sanctum authentication and an admin role (`admin`, `Admin`, or `Super Admin`).'
+                'Requires Sanctum authentication and the `admin` role.'
             );
         }
     }

@@ -31,7 +31,7 @@ Interactive reference for all `/api/v1` endpoints. Machine-readable spec: [`/doc
 | **Agent token** | `Authorization: Bearer {token}` | AI agent routes (`/masters`, `/ai/products`) |
 | **None** | — | Public catalog, RFQ, guest quotes, newsletter |
 
-Admin routes require Sanctum **and** an admin role (`admin`, `Admin`, or `Super Admin`).
+Admin routes require Sanctum **and** the `admin` role.
 
 Agent tokens are managed in the admin panel and documented in [AI Agent API workflow](https://github.com/feedsforless/docs/ai-agent-api.md).
 

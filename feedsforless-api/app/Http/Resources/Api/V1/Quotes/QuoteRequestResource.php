@@ -77,10 +77,6 @@ class QuoteRequestResource extends JsonResource
     {
         $user = $request->user();
 
-        return $user && (
-            $user->hasRole('admin')
-            || $user->hasRole('Admin')
-            || $user->hasRole('Super Admin')
-        );
+        return $user && $user->hasRole('admin');
     }
 }

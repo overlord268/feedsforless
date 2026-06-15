@@ -11,6 +11,12 @@
           Import
         </router-link>
         <router-link
+          :to="{ name: 'AdminProductPricing' }"
+          class="inline-flex items-center justify-center px-4 py-3 sm:px-5 sm:py-2.5 border border-slate-200 text-slate-700 font-medium rounded-xl hover:bg-slate-50 transition-colors touch-manipulation"
+        >
+          Profit margins
+        </router-link>
+        <router-link
           :to="{ name: 'AdminProductCreate' }"
           class="inline-flex items-center justify-center px-4 py-3 sm:px-5 sm:py-2.5 bg-emerald-600 text-white font-medium rounded-xl hover:bg-emerald-700 transition-colors shadow-sm touch-manipulation"
         >

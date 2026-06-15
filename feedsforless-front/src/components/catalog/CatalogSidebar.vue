@@ -96,7 +96,7 @@ const authStore = useAuthStore();
 const showAccountNav = computed(() => {
   if (!authStore.token) return false;
   const roles = authStore.user?.roles || [];
-  return !roles.some(r => ['admin', 'Admin', 'Super Admin'].includes(r.name));
+  return !roles.some((r) => r.name === 'admin');
 });
 
 const props = defineProps({

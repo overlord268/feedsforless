@@ -15,6 +15,7 @@ class VolumePricingTier extends Model
         'pricing_mode',
         'discount_percentage',
         'fixed_price',
+        'profit_margin_percent',
     ];
 
     protected function casts(): array
@@ -22,6 +23,7 @@ class VolumePricingTier extends Model
         return [
             'discount_percentage' => 'float',
             'fixed_price' => 'float',
+            'profit_margin_percent' => 'float',
         ];
     }
 

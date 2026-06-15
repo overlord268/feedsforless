@@ -17,6 +17,7 @@ class Product extends Model
         'slug',
         'grade',
         'base_price_ref',
+        'profit_margin_percent',
         'description',
         'origin_address',
         'stock_status',
@@ -35,6 +36,7 @@ class Product extends Model
     protected $casts = [
         'lead_time' => 'date',
         'max_lead_time' => 'date',
+        'profit_margin_percent' => 'float',
     ];
 
     public function categories(): BelongsToMany

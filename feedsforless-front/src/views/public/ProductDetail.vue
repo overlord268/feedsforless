@@ -425,6 +425,10 @@ const volumeDiscountPerTon = computed(() => {
 const effectiveProductPerTon = computed(() => {
   const tier = matchedVolumeTier.value;
   if (tier) {
+    const baked = Number(tier.customer_price_per_ton);
+    if (!Number.isNaN(baked) && baked >= 0) {
+      return baked;
+    }
     if ((tier.pricing_mode || 'percentage') === 'fixed_price') {
       const fixed = Number(tier.fixed_price);
       return !Number.isNaN(fixed) && fixed >= 0 ? fixed : null;

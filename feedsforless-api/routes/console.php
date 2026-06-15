@@ -17,8 +17,8 @@ Artisan::command('user:make-admin {email}', function (string $email) {
     }
     // App expects role 'admin' (sanctum) for admin panel access
     Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'sanctum']);
-    if ($user->hasRole('admin') || $user->hasRole('Admin') || $user->hasRole('Super Admin')) {
-        $this->info("User [{$email}] already has an admin role.");
+    if ($user->hasRole('admin')) {
+        $this->info("User [{$email}] already has the admin role.");
         return 0;
     }
     $user->assignRole('admin');
