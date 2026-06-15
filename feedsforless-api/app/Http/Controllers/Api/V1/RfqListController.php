@@ -14,6 +14,9 @@ use Illuminate\Http\Request;
 
 class RfqListController extends Controller
 {
+    /**
+     * @unauthenticated
+     */
     public function addItem(
         AddProductToRfqListRequest $request,
         AddProductToRfqListAction $action
@@ -34,6 +37,9 @@ class RfqListController extends Controller
         ], 200);
     }
 
+    /**
+     * @unauthenticated
+     */
     public function show(Request $request): JsonResponse
     {
         $query = RfqList::with(['items.product', 'items.packagingType'])
@@ -58,6 +64,9 @@ class RfqListController extends Controller
         ], 200);
     }
 
+    /**
+     * @unauthenticated
+     */
     public function removeItem(int $itemId): JsonResponse
     {
         $item = RfqListItem::findOrFail($itemId);

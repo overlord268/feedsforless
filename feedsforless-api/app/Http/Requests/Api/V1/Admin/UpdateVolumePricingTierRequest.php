@@ -17,7 +17,9 @@ class UpdateVolumePricingTierRequest extends FormRequest
             'tier_name' => ['sometimes', 'required', 'string', 'max:255'],
             'min_quantity' => ['sometimes', 'required', 'integer', 'min:1'],
             'max_quantity' => ['nullable', 'integer', 'gt:min_quantity'],
-            'discount_percentage' => ['sometimes', 'required', 'numeric', 'min:0', 'max:100'],
+            'pricing_mode' => ['sometimes', 'nullable', 'string', 'in:percentage,fixed_price'],
+            'discount_percentage' => ['sometimes', 'nullable', 'numeric', 'min:0', 'max:100'],
+            'fixed_price' => ['sometimes', 'nullable', 'numeric', 'min:0'],
         ];
     }
 }

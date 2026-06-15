@@ -11,16 +11,17 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\Quotes\SubmitGuestQuoteRequestRequest;
 use App\Http\Requests\Api\V1\Quotes\SubmitQuoteRequestRequest;
 use App\Http\Resources\Api\V1\Quotes\QuoteRequestResource;
-use App\Mail\GuestQuoteInvitationMail;
+use App\Services\QuoteRequestNotifier;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Mail;
 use Exception;
 
 class QuoteRequestController extends Controller
 {
     /**
      * Guest submission: no auth required. Creates quote request with guest email and contact info.
+     *
+     * @unauthenticated
      */
     public function submitGuest(
         SubmitGuestQuoteRequestRequest $request,
@@ -44,17 +45,8 @@ class QuoteRequestController extends Controller
 
             $quoteRequest = $action->execute($dto);
 
-            try {
-                $registerUrl = rtrim(config('app.frontend_url', config('app.url')), '/') . '/register';
-                Mail::to($request->validated('email'))
-                    ->send(new GuestQuoteInvitationMail(
-                        guestEmail: $request->validated('email'),
-                        contactName: $request->validated('contact_name', ''),
-                        registerUrl: $registerUrl
-                    ));
-            } catch (Exception $mailEx) {
-                report($mailEx);
-            }
+            $registerUrl = rtrim(config('app.frontend_url', config('app.url')), '/') . '/register';
+            app(QuoteRequestNotifier::class)->sendSubmitted($quoteRequest, $registerUrl);
 
             return response()->json([
                 'message' => 'Quote request submitted successfully',
@@ -69,12 +61,25 @@ class QuoteRequestController extends Controller
 
     public function index(Request $request): \Illuminate\Http\Resources\Json\AnonymousResourceCollection
     {
+        $perPage = min(max((int) $request->query('per_page', 50), 1), 100);
+
         $quotes = QuoteRequest::with(['items.product', 'items.packagingType', 'address'])
             ->where('request_by_id', $request->user()->id)
             ->orderBy('created_at', 'desc')
-            ->paginate(15);
+            ->paginate($perPage);
 
         return QuoteRequestResource::collection($quotes);
+    }
+
+    public function show(Request $request, QuoteRequest $quoteRequest): JsonResponse
+    {
+        if ((int) $quoteRequest->request_by_id !== (int) $request->user()->id) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $quoteRequest->load(['items.product', 'items.packagingType', 'address']);
+
+        return (new QuoteRequestResource($quoteRequest))->response();
     }
 
     public function submit(
@@ -92,6 +97,8 @@ class QuoteRequestController extends Controller
             );
 
             $quoteRequest = $action->execute($dto);
+
+            app(QuoteRequestNotifier::class)->sendSubmitted($quoteRequest);
 
             return response()->json([
                 'message' => 'Quote request submitted successfully',

@@ -8,13 +8,19 @@
         type="text"
         placeholder="Product name"
       />
-      <FormInput
-        v-model="form.sku"
-        variant="admin"
-        label="SKU"
-        type="text"
-        placeholder="SKU code"
-      />
+      <div v-if="isEdit && form.sku">
+        <label class="block text-sm font-medium text-slate-700 mb-1.5">SKU</label>
+        <p class="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 font-mono text-sm">
+          {{ form.sku }}
+        </p>
+        <p class="mt-1 text-xs text-slate-500">Assigned automatically and cannot be changed.</p>
+      </div>
+      <div v-else-if="!isEdit">
+        <label class="block text-sm font-medium text-slate-700 mb-1.5">SKU</label>
+        <p class="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-500 text-sm">
+          Generated automatically on save from category, name, and grade.
+        </p>
+      </div>
     </div>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
       <FormInput
@@ -34,6 +40,9 @@
           class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 transition-all focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500"
           placeholder="0.00"
         />
+        <p class="mt-1 text-xs text-slate-500">
+          Used by the calculator only when the product has no presentations. Each presentation uses its own base price.
+        </p>
       </div>
     </div>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -101,6 +110,10 @@ const props = defineProps({
   form: {
     type: Object,
     required: true,
+  },
+  isEdit: {
+    type: Boolean,
+    default: false,
   },
 });
 

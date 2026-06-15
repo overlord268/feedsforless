@@ -1,10 +1,15 @@
 # FeedsForLess API — Full Documentation
 
+> **Interactive API reference (OpenAPI / Swagger):** [`/docs/api`](/docs/api)  
+> **Machine-readable spec:** [`/docs/api.json`](/docs/api.json)
+>
 > **Base URL:** `http://localhost/api/v1` (development) | `https://api.feedsforless.com/api/v1` (production)
 >
-> **Version:** v1
-> **Response Format:** `application/json`
-> **Authentication:** Laravel Sanctum — Bearer Token
+> **Version:** v1  
+> **Response Format:** `application/json` (except file/YAML endpoints documented in Swagger)  
+> **Authentication:** Laravel Sanctum — Bearer Token (see Swagger security schemes)
+
+Endpoint paths, request bodies, and response schemas are maintained automatically in **Swagger UI**. This document keeps conventions, error codes, and reference tables that are not duplicated in the OpenAPI spec.
 
 ---
 
@@ -34,6 +39,7 @@
 - [Admin — Users](#admin--users)
 - [Admin — Companies](#admin--companies)
 - [Admin — Dashboard](#admin--dashboard)
+- [AI Agent API](../docs/ai-agent-api.md) — agent tokens, YAML masters, product upsert
 - [Global Error Codes](#global-error-codes)
 - [Quote Request Status Reference](#quote-request-status-reference)
 

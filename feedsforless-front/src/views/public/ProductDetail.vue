@@ -36,7 +36,7 @@
     </aside>
 
     <!-- Main content -->
-    <main class="flex-1 w-full min-w-0 min-h-0 overflow-y-auto p-6 md:p-8 lg:p-10">
+    <main class="flex-1 w-full min-w-0 min-h-0 overflow-y-auto overflow-x-hidden p-4 sm:p-6 md:p-8 lg:p-10">
       <div v-if="loading" class="py-12 flex justify-center">
         <PageLoader message="Loading product…" />
       </div>
@@ -172,10 +172,10 @@
         <div>
           <label class="block text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-widest mb-1.5">Packaging Type</label>
           <select
-            v-model.number="selectedPackagingId"
+            v-model.number="selectedPackagingOptionId"
             class="w-full min-h-[44px] border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm font-medium text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-[#2962ff] focus:border-[#2962ff] rounded"
           >
-            <option v-for="opt in product.packaging_options" :key="opt.packaging_type_id" :value="opt.packaging_type_id">
+            <option v-for="opt in product.packaging_options" :key="opt.id" :value="opt.id">
               {{ opt.type_name }}
             </option>
           </select>
@@ -200,27 +200,69 @@
         </div>
       </div>
 
-      <!-- Freight Cost Components (match design) -->
-      <div v-if="productBasePerTon != null" class="mt-6 space-y-2 text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-widest">
-        <div class="flex justify-between items-center">
-          <span>Product Base</span>
-          <span class="text-slate-800 dark:text-slate-200 font-mono">${{ formatNum(productBasePerTon) }}/T</span>
+      <div
+        v-if="effectiveProductPerTon != null && validVolume"
+        class="mt-5 rounded-lg border border-slate-200/80 dark:border-slate-600/80 bg-slate-50/80 dark:bg-slate-800/40 px-3.5 py-3 space-y-1.5"
+      >
+        <div class="flex justify-between items-baseline gap-3">
+          <span class="text-xs text-slate-500 dark:text-slate-400">Product price</span>
+          <div class="text-right leading-tight">
+            <span
+              v-if="showStrikethroughBase"
+              class="text-xs text-slate-400 line-through mr-1.5"
+            >${{ formatNum(percentDiscountBasePerTon) }}</span>
+            <span class="text-sm font-semibold text-slate-800 dark:text-slate-100 font-mono">
+              ${{ formatNum(effectiveProductPerTon) }}/T
+            </span>
+          </div>
         </div>
-        <div class="flex justify-between items-center">
-          <span>Packaging Premium</span>
-          <span class="text-slate-800 dark:text-slate-200 font-mono">+ ${{ formatNum(packagingPremiumPerTon) }}/T</span>
-        </div>
-        <div class="flex justify-between items-center">
-          <span>Est. Logistics</span>
-          <span class="text-amber-600 dark:text-amber-400 normal-case">Market Fluctuating</span>
-        </div>
+        <p
+          v-if="volumePricingBadge"
+          class="text-xs text-emerald-700 dark:text-emerald-400"
+        >
+          {{ volumePricingBadge }}
+        </p>
       </div>
 
-      <div v-if="estimatedRange && validVolume" class="mt-6 p-4 bg-[#2962ff] dark:bg-blue-700 rounded-lg text-white">
+      <div v-if="estimatedRange && validVolume" class="mt-4 p-4 bg-[#2962ff] dark:bg-blue-700 rounded-lg text-white">
         <div class="text-[10px] font-bold uppercase tracking-widest opacity-90 mb-1">Estimated Range (Delivered)</div>
         <div class="text-xl font-black tracking-tight">{{ estimatedRange }}</div>
-        <div class="text-xs font-medium mt-1 opacity-90">Approx. ${{ formatNum(approxPerTonDelivered) }} per ton delivered.</div>
+        <div class="text-sm font-medium mt-1 opacity-95">~${{ formatNum(approxPerTonDelivered) }} per ton</div>
+        <p class="text-[10px] mt-2 opacity-80 leading-relaxed">
+          Includes product and estimated freight. Final price confirmed on quote.
+        </p>
       </div>
+
+      <details
+        v-if="productBasePerTon != null && validVolume"
+        class="mt-4 group"
+      >
+        <summary class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest cursor-pointer select-none hover:text-slate-700 dark:hover:text-slate-300 list-none flex items-center gap-1">
+          <span class="transition-transform group-open:rotate-90">›</span>
+          View price breakdown
+        </summary>
+        <div class="mt-3 space-y-2 text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-widest pl-3 border-l-2 border-slate-200 dark:border-slate-600">
+          <div class="flex justify-between items-center gap-4">
+            <span>Product</span>
+            <span class="text-slate-800 dark:text-slate-200 font-mono shrink-0">${{ formatNum(effectiveProductPerTon) }}/T</span>
+          </div>
+          <div v-if="matchedVolumeTier && volumeTierIsFixed" class="flex justify-between items-center gap-4 normal-case font-medium text-slate-500">
+            <span>Volume tier ({{ activeVolumeTierLabel }})</span>
+          </div>
+          <div v-else-if="volumeDiscountPercent > 0" class="flex justify-between items-center gap-4">
+            <span>Volume discount</span>
+            <span class="text-emerald-700 dark:text-emerald-400 font-mono shrink-0">−{{ volumeDiscountPercent }}%</span>
+          </div>
+          <div v-if="productSubtotal != null" class="flex justify-between items-center gap-4 normal-case font-medium text-slate-500">
+            <span>Product total ({{ orderVolume }} T)</span>
+            <span class="font-mono shrink-0">${{ formatNum(productSubtotal) }}</span>
+          </div>
+          <div class="flex justify-between items-center gap-4">
+            <span>Est. freight</span>
+            <span class="text-amber-600 dark:text-amber-400 normal-case font-medium shrink-0">$200–$400/T</span>
+          </div>
+        </div>
+      </details>
 
       <router-link
         :to="requestQuoteLink"
@@ -253,7 +295,7 @@ const loading = ref(true);
 const allProducts = ref([]);
 
 const orderVolume = ref(24);
-const selectedPackagingId = ref(null);
+const selectedPackagingOptionId = ref(null);
 const destinationZip = ref('46204');
 const requiresLiftgate = ref(false);
 
@@ -305,50 +347,198 @@ const technicalQaAnswer = computed(() => {
 });
 
 const selectedPackaging = computed(() => {
-  if (!product.value?.packaging_options) return null;
-  return product.value.packaging_options.find(p => p.packaging_type_id === selectedPackagingId.value)
-    || product.value.packaging_options[0];
+  if (!product.value?.packaging_options?.length) return null;
+  const opts = product.value.packaging_options;
+  const id = Number(selectedPackagingOptionId.value);
+  if (!Number.isNaN(id)) {
+    const match = opts.find(p => Number(p.id) === id);
+    if (match) return match;
+  }
+  return opts[0];
 });
 
-const productBasePerTon = computed(() => {
+const hasPresentations = computed(() => (product.value?.packaging_options?.length ?? 0) > 0);
+
+/** Base $/T of the selected presentation (always used for % tier math). */
+const selectedPresentationBasePerTon = computed(() => {
+  const pack = selectedPackaging.value;
+  if (!pack) return null;
+  const n = Number(pack.base_price_per_unit);
+  return Number.isFinite(n) ? n : null;
+});
+
+/** Product-level base — only when there are no presentations. */
+const fallbackProductBasePerTon = computed(() => {
+  if (hasPresentations.value) return null;
   const p = product.value;
-  if (!p) return null;
-  if (p.base_price_ref != null) return Number(p.base_price_ref);
-  const pack = selectedPackaging.value;
-  if (pack?.base_price_per_unit != null) return Number(pack.base_price_per_unit);
-  return null;
+  if (p?.base_price_ref != null) return Number(p.base_price_ref);
+  return selectedPresentationBasePerTon.value;
 });
 
-const packagingPremiumPerTon = computed(() => {
-  const pack = selectedPackaging.value;
-  if (!pack) return 0;
-  return 0;
+/** Display / no-tier pricing. */
+const presentationBasePerTon = computed(() => {
+  if (hasPresentations.value) {
+    return selectedPresentationBasePerTon.value;
+  }
+  return fallbackProductBasePerTon.value;
 });
+
+const productBasePerTon = computed(() => presentationBasePerTon.value);
+
+const presentationTierPricingMode = computed(() => {
+  const tiers = selectedPackaging.value?.volume_tiers;
+  if (!tiers?.length) return null;
+  const first = tiers[0]?.pricing_mode;
+  return first === 'fixed_price' ? 'fixed_price' : 'percentage';
+});
+
+const percentDiscountBasePerTon = computed(() => selectedPresentationBasePerTon.value);
 
 const validVolume = computed(() => {
   const v = Number(orderVolume.value);
   return !Number.isNaN(v) && v >= 1;
 });
 
-const approxPerTonDelivered = computed(() => {
-  const base = productBasePerTon.value;
-  if (base == null || !validVolume.value) return null;
-  const logisticsEst = 250;
-  return formatNum(base + logisticsEst);
+const matchedVolumeTier = computed(() => {
+  const pack = selectedPackaging.value;
+  if (!pack?.volume_tiers?.length || !validVolume.value) return null;
+  return resolveMatchedVolumeTier(orderVolume.value, pack.volume_tiers);
 });
 
-const estimatedRange = computed(() => {
-  const base = productBasePerTon.value;
-  if (base == null || !validVolume.value) return null;
+const volumeTierIsFixed = computed(() => {
+  const tier = matchedVolumeTier.value;
+  return tier != null && (tier.pricing_mode || 'percentage') === 'fixed_price';
+});
+
+const volumeDiscountPercent = computed(() => {
+  const tier = matchedVolumeTier.value;
+  if (!tier || (tier.pricing_mode || 'percentage') !== 'percentage') return 0;
+  return Math.max(0, Number(tier.discount_percentage) || 0);
+});
+
+const volumeDiscountPerTon = computed(() => {
+  const base = percentDiscountBasePerTon.value;
+  if (base == null || volumeDiscountPercent.value <= 0) return 0;
+  return base * (volumeDiscountPercent.value / 100);
+});
+
+const effectiveProductPerTon = computed(() => {
+  const tier = matchedVolumeTier.value;
+  if (tier) {
+    if ((tier.pricing_mode || 'percentage') === 'fixed_price') {
+      const fixed = Number(tier.fixed_price);
+      return !Number.isNaN(fixed) && fixed >= 0 ? fixed : null;
+    }
+    const base = percentDiscountBasePerTon.value;
+    if (base == null) return null;
+    const disc = Math.max(0, Number(tier.discount_percentage) || 0);
+    return base * (1 - disc / 100);
+  }
+
+  return presentationBasePerTon.value;
+});
+
+const activeVolumeTierLabel = computed(() => {
+  const tier = matchedVolumeTier.value;
+  if (!tier) return null;
+  const max = tier.max_quantity != null && tier.max_quantity !== '' ? tier.max_quantity : '∞';
+  return `${tier.min_quantity}–${max} T`;
+});
+
+const showStrikethroughBase = computed(() => {
+  const base = percentDiscountBasePerTon.value;
+  const effective = effectiveProductPerTon.value;
+  if (base == null || effective == null || !matchedVolumeTier.value) return false;
+  if (presentationTierPricingMode.value === 'fixed_price') return false;
+  return Math.abs(base - effective) > 0.001;
+});
+
+const volumePricingBadge = computed(() => {
+  const tier = matchedVolumeTier.value;
+  if (!tier || !validVolume.value) return null;
+  if (volumeTierIsFixed.value) {
+    return `Volume pricing · ${activeVolumeTierLabel.value}`;
+  }
+  if (volumeDiscountPercent.value > 0) {
+    const packName = selectedPackaging.value?.type_name;
+    const base = percentDiscountBasePerTon.value;
+    const suffix = packName && base != null
+      ? ` · ${packName} base $${formatNum(base)}/T`
+      : '';
+    return `${volumeDiscountPercent.value}% volume discount applied${suffix}`;
+  }
+  return null;
+});
+
+const productSubtotal = computed(() => {
+  const price = effectiveProductPerTon.value;
+  if (price == null || !validVolume.value) return null;
+  return price * Math.max(1, Number(orderVolume.value));
+});
+
+const LOGISTICS_LOW_PER_TON = 200;
+const LOGISTICS_HIGH_PER_TON = 400;
+
+const deliveredEstimate = computed(() => {
+  const productPerTon = effectiveProductPerTon.value;
+  if (productPerTon == null || !validVolume.value) return null;
   const qty = Math.max(1, Number(orderVolume.value));
-  const low = (base + 200) * qty;
-  const high = (base + 400) * qty;
-  return `$${formatNum(low)} - $${formatNum(high)}`;
+  const logisticsMid = (LOGISTICS_LOW_PER_TON + LOGISTICS_HIGH_PER_TON) / 2;
+  return {
+    totalLow: (productPerTon + LOGISTICS_LOW_PER_TON) * qty,
+    totalHigh: (productPerTon + LOGISTICS_HIGH_PER_TON) * qty,
+    perTonMid: productPerTon + logisticsMid,
+  };
+});
+
+/** Midpoint of the logistics band ($200–$400/T), aligned with the range endpoints. */
+const approxPerTonDelivered = computed(() => deliveredEstimate.value?.perTonMid ?? null);
+
+const estimatedRange = computed(() => {
+  const est = deliveredEstimate.value;
+  if (!est) return null;
+  return `$${formatNum(est.totalLow)} - $${formatNum(est.totalHigh)}`;
 });
 
 function formatNum(n) {
   if (n == null || Number.isNaN(n)) return '0.00';
   return Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+/**
+ * Match order volume (tons) to the most specific volume tier for the selected packaging.
+ */
+function resolveMatchedVolumeTier(quantityTons, tiers) {
+  const qty = Number(quantityTons);
+  if (Number.isNaN(qty) || qty < 1 || !Array.isArray(tiers) || tiers.length === 0) {
+    return null;
+  }
+
+  const normalized = tiers
+    .map((tier) => {
+      const min = Number(tier.min_quantity ?? 0);
+      const maxRaw = tier.max_quantity;
+      const maxNum = maxRaw != null && maxRaw !== '' ? Number(maxRaw) : null;
+      const max = maxNum != null && !Number.isNaN(maxNum) && maxNum > 0 ? maxNum : null;
+
+      return { ...tier, min, max };
+    })
+    .filter((tier) => !Number.isNaN(tier.min))
+    .sort((a, b) => b.min - a.min);
+
+  for (const tier of normalized) {
+    if (qty < tier.min) continue;
+    if (tier.max != null && qty > tier.max) continue;
+    return tier;
+  }
+
+  const byMinAsc = [...normalized].sort((a, b) => a.min - b.min);
+  const last = byMinAsc[byMinAsc.length - 1];
+  if (last && qty >= last.min) {
+    return last;
+  }
+
+  return null;
 }
 
 const requestQuoteLink = computed(() => {
@@ -359,7 +549,7 @@ const requestQuoteLink = computed(() => {
     query: {
       productId: product.value?.id,
       quantity: validVolume.value ? orderVolume.value : 24,
-      packaging_type_id: selectedPackagingId.value,
+      packaging_type_id: selectedPackaging.value?.packaging_type_id,
       delivery_zip: destinationZip.value || undefined,
       requires_liftgate: requiresLiftgate.value ? '1' : undefined
     }
@@ -389,8 +579,13 @@ async function fetchProduct() {
     product.value = raw;
     const opts = raw?.packaging_options || [];
     if (opts.length) {
-      if (selectedPackagingId.value == null || !opts.some(p => p.packaging_type_id === selectedPackagingId.value)) {
-        selectedPackagingId.value = opts[0].packaging_type_id;
+      const currentId = Number(selectedPackagingOptionId.value);
+      if (
+        selectedPackagingOptionId.value == null
+        || Number.isNaN(currentId)
+        || !opts.some(p => Number(p.id) === currentId)
+      ) {
+        selectedPackagingOptionId.value = opts[0].id;
       }
     }
   } catch {

@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api\V1;
 use App\Domains\Catalog\Models\Product;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Api\V1\ProductResource;
+use Dedoc\Scramble\Attributes\QueryParameter;
+use Dedoc\Scramble\Attributes\Response;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\JsonResponse;
@@ -13,6 +15,10 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class CatalogController extends Controller
 {
+    /**
+     * @unauthenticated
+     */
+    #[QueryParameter('category_slug', description: 'Filter products by category slug.', type: 'string', required: false)]
     public function index(Request $request): AnonymousResourceCollection
     {
         $query = Product::where('status', 'published')->with(['categories', 'packaging.packagingType']);
@@ -28,11 +34,13 @@ class CatalogController extends Controller
 
     /**
      * Single product by ID (for backward compatibility).
+     *
+     * @unauthenticated
      */
     public function show(int $id): ProductResource|JsonResponse
     {
         $model = Product::where('status', 'published')
-            ->with(['categories', 'packaging.packagingType', 'typicalApplications'])
+            ->with(['categories', 'packaging.packagingType', 'packaging.tiers', 'typicalApplications'])
             ->find($id);
 
         if (!$model) {
@@ -44,12 +52,14 @@ class CatalogController extends Controller
 
     /**
      * Single product by slug (canonical product page).
+     *
+     * @unauthenticated
      */
     public function showBySlug(string $slug): ProductResource|JsonResponse
     {
         $model = Product::where('status', 'published')
             ->where('slug', $slug)
-            ->with(['categories', 'packaging.packagingType', 'typicalApplications'])
+            ->with(['categories', 'packaging.packagingType', 'packaging.tiers', 'typicalApplications'])
             ->first();
 
         if (!$model) {
@@ -61,7 +71,10 @@ class CatalogController extends Controller
 
     /**
      * Public document preview/download for catalog (TDS, SDS, COA/ODA).
+     *
+     * @unauthenticated
      */
+    #[Response(200, 'Document file stream.', mediaType: 'application/octet-stream')]
     public function document(Product $product, string $type): BinaryFileResponse|JsonResponse
     {
         if (!in_array($type, ['tds', 'sds', 'coa'], true)) {

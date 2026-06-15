@@ -2,12 +2,15 @@
 
 namespace App\Domains\Catalog\Models;
 
+use App\Domains\Catalog\Models\Concerns\HasCatalogSlug;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class TypicalApplication extends Model
 {
-    protected $fillable = ['label', 'description'];
+    use HasCatalogSlug;
+
+    protected $fillable = ['label', 'slug', 'description'];
 
     public function products(): BelongsToMany
     {

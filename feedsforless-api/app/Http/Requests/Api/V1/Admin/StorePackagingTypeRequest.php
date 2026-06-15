@@ -15,6 +15,7 @@ class StorePackagingTypeRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255', 'unique:packaging_types,name'],
+            'slug' => ['sometimes', 'nullable', 'string', 'max:255', 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/', 'unique:packaging_types,slug'],
         ];
     }
 }

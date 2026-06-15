@@ -1,5 +1,5 @@
 <template>
-  <div class="h-screen bg-white dark:bg-slate-900 font-sans text-slate-900 dark:text-slate-100 w-full flex flex-col overflow-hidden">
+  <div class="min-h-dvh bg-white dark:bg-slate-900 font-sans text-slate-900 dark:text-slate-100 w-full flex flex-col overflow-x-hidden">
     <!-- Header -->
     <header class="bg-[#003366] dark:bg-slate-800 sticky top-0 z-40 w-full shadow-md">
       <div class="w-full px-4 lg:px-6 py-3 flex items-center justify-between gap-4 md:gap-6">
@@ -44,12 +44,25 @@
           </template>
           <template v-else>
             <router-link to="/login" class="text-[12px] font-bold uppercase tracking-wider hover:text-blue-200 transition-colors">Sign In</router-link>
-            <router-link to="/register" class="bg-white text-[#003366] text-[12px] font-bold uppercase tracking-wider px-4 py-2 rounded hover:bg-slate-100 transition-colors">Sign Up</router-link>
+            <router-link
+              v-if="!showNewsletterWelcome"
+              :to="{ name: 'Register' }"
+              class="bg-white text-[#003366] text-[12px] font-bold uppercase tracking-wider px-4 py-2 rounded hover:bg-slate-100 transition-colors"
+            >
+              Sign Up
+            </router-link>
           </template>
         </div>
       </div>
       <div class="w-full h-1 bg-green-700"></div>
     </header>
+
+    <NewsletterWelcomeBanner
+      v-if="!isAuthRoute"
+      :show="showNewsletterWelcome"
+      :register-to="newsletterRegisterTo"
+      @dismiss="dismissNewsletterWelcome"
+    />
 
     <!-- Base view: key by route so navigation always switches view (avoids "stuck" on Request Quote) -->
     <main class="flex-1 w-full flex flex-col pt-0 overflow-y-auto overflow-x-hidden min-h-0 bg-white dark:bg-slate-900">
@@ -101,9 +114,15 @@
 
         <div class="flex-1 overflow-y-auto px-4 py-4 space-y-4 flex flex-col justify-between">
           <div>
-            <template v-if="!isLoggedIn">
+            <template v-if="!isLoggedIn && !showNewsletterWelcome">
               <div class="flex flex-col gap-3">
-                <router-link to="/register" @click="isMobileMenuOpen = false" class="block w-full text-center border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 text-[12px] font-bold uppercase tracking-wider px-4 py-3 rounded-lg">Sign Up</router-link>
+                <router-link
+                  :to="{ name: 'Register' }"
+                  @click="isMobileMenuOpen = false"
+                  class="block w-full text-center border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 text-[12px] font-bold uppercase tracking-wider px-4 py-3 rounded-lg"
+                >
+                  Sign Up
+                </router-link>
               </div>
             </template>
           </div>
@@ -112,7 +131,8 @@
             <div class="border-t border-slate-200 dark:border-slate-700 pt-4 flex flex-col gap-1 mt-auto">
               <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-3">Account Menu</div>
               <router-link to="/account" @click="isMobileMenuOpen = false" class="px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg">Profile</router-link>
-              <router-link to="/quotes" @click="isMobileMenuOpen = false" class="px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg">My Qtr</router-link>
+              <router-link to="/quotes" @click="isMobileMenuOpen = false" class="px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg">My Quotes</router-link>
+              <router-link to="/messages" @click="isMobileMenuOpen = false" class="px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg">Messages</router-link>
               <router-link to="/addresses" @click="isMobileMenuOpen = false" class="px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg">Addresses</router-link>
               <div class="px-3 py-2 flex items-center justify-between">
                 <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Dark mode</span>
@@ -127,52 +147,9 @@
       </div>
     </div>
 
-    <footer v-if="!isAuthRoute" class="bg-[#0b1320] text-slate-300 py-6 md:py-8 text-sm w-full shrink-0">
-      <div class="w-full px-4 lg:px-12 max-w-screen-2xl mx-auto">
-        <!-- Main Footer Links Grid -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-6 md:gap-6">
-          <div class="col-span-2 md:col-span-1 pr-4 md:pr-8 mb-2 md:mb-0">
-            <div class="bg-white text-[#003366] font-black italic text-xl md:text-2xl px-3 py-1 leading-none tracking-tighter inline-block mb-2">
-              FFL
-            </div>
-            <h4 class="text-white font-bold text-xs uppercase tracking-widest mb-2 md:mb-3">FeedsForLess Industrial</h4>
-            <p class="text-slate-400 text-[11px] md:text-xs leading-relaxed max-w-md">
-              Providing high-efficiency procurement for commercial livestock, poultry, and specialty feed manufacturers across North America.
-            </p>
-          </div>
-          
-          <div>
-            <h5 class="text-white font-bold text-[10px] md:text-xs uppercase tracking-widest mb-3 md:mb-4">Company</h5>
-            <ul class="space-y-2 md:space-y-3 text-slate-400 text-xs">
-              <li><a href="#" class="hover:text-white transition-colors">About Us</a></li>
-              <li><a href="#" class="hover:text-white transition-colors">Resource Center</a></li>
-              <li><a href="#" class="hover:text-white transition-colors">Sustainability</a></li>
-              <li><a href="#" class="hover:text-white transition-colors">Careers</a></li>
-            </ul>
-          </div>
-          
-          <div>
-            <h5 class="text-white font-bold text-[10px] md:text-xs uppercase tracking-widest mb-3 md:mb-4">Support</h5>
-            <ul class="space-y-2 md:space-y-3 text-slate-400 text-xs">
-              <li><a href="#" class="hover:text-white transition-colors">Safety Data Sheets</a></li>
-              <li><a href="#" class="hover:text-white transition-colors">Technical Standards</a></li>
-              <li><a href="#" class="hover:text-white transition-colors">Terms of Sale</a></li>
-              <li><a href="#" class="hover:text-white transition-colors">Logistics Support</a></li>
-            </ul>
-          </div>
-          
-          <div class="col-span-2 md:col-span-1 mt-2 md:mt-0 pt-4 md:pt-0 border-t border-slate-700/50 md:border-0">
-            <h5 class="text-white font-bold text-[10px] md:text-xs uppercase tracking-widest mb-2 md:mb-4">Compliance</h5>
-            <p class="text-slate-400 text-xs leading-relaxed mb-2">
-              ISO 9001:2015 Certified Logistics & Distribution
-            </p>
-            <p class="text-slate-500 text-[10px] md:text-xs">
-              © 2026 FeedsForLess LLC.
-            </p>
-          </div>
-        </div>
-      </div>
-    </footer>
+    <SiteFooter v-if="!isAuthRoute" />
+
+    <ChatWidget />
   </div>
 </template>
 
@@ -182,8 +159,17 @@ import { useAuthStore } from '../stores/auth';
 import { useThemeStore } from '../stores/theme';
 import { useRoute, useRouter } from 'vue-router';
 import UserMenu from '../components/layout/UserMenu.vue';
+import SiteFooter from '../components/layout/SiteFooter.vue';
+import ChatWidget from '../components/chat/ChatWidget.vue';
+import NewsletterWelcomeBanner from '../components/layout/NewsletterWelcomeBanner.vue';
+import { useNewsletterWelcome } from '../composables/useNewsletterWelcome';
 
 const route = useRoute();
+const {
+  showBanner: showNewsletterWelcome,
+  registerTo: newsletterRegisterTo,
+  dismiss: dismissNewsletterWelcome,
+} = useNewsletterWelcome();
 const router = useRouter();
 const authStore = useAuthStore();
 const themeStore = useThemeStore();

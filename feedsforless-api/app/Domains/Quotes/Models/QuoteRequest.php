@@ -25,6 +25,7 @@ class QuoteRequest extends Model
         'total_estimated_cost',
         'status',
         'admin_note',
+        'customer_message',
     ];
 
     public function requester(): BelongsTo

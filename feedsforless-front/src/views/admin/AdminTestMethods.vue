@@ -23,6 +23,7 @@
     <CrudTable :columns="columns" :items="items" :loading="loading">
       <template #row="{ item }">
         <td class="px-6 py-4 text-slate-700">{{ item.id }}</td>
+        <td class="px-6 py-4 font-mono text-xs text-slate-600">{{ item.slug }}</td>
         <td class="px-6 py-4 text-slate-800">{{ item.label }}</td>
         <td class="px-6 py-4">
           <div class="flex items-center gap-1">
@@ -64,7 +65,18 @@
         label="Label"
         type="text"
         required
-        placeholder="e.g. AOCS"
+        placeholder="e.g. AOAC 930.15"
+        @input="syncSlugFromLabel"
+      />
+      <FormInput
+        v-model="form.slug"
+        variant="admin"
+        label="Slug"
+        type="text"
+        required
+        placeholder="e.g. aoac-930-15"
+        hint="Used in Excel import. Must match exactly."
+        @input="onSlugInput"
       />
     </SimpleFormModal>
   </div>
@@ -77,9 +89,11 @@ import { useConfirm } from '../../composables/useConfirm';
 import CrudTable from '../../components/admin/CrudTable.vue';
 import SimpleFormModal from '../../components/admin/SimpleFormModal.vue';
 import FormInput from '../../components/ui/FormInput.vue';
+import { useCatalogSlugForm } from '../../composables/useCatalogSlug';
 
 const columns = [
   { key: 'id', label: 'ID' },
+  { key: 'slug', label: 'Slug' },
   { key: 'label', label: 'Label' },
   { key: 'actions', label: 'Actions', thClass: 'px-6 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider w-24' },
 ];
@@ -90,7 +104,8 @@ const showModal = ref(false);
 const saving = ref(false);
 const editingId = ref(null);
 const successMessage = ref('');
-const form = reactive({ label: '' });
+const form = reactive({ label: '', slug: '' });
+const { onSlugInput, syncSlugFromLabel, resetSlugTouched } = useCatalogSlugForm(form);
 
 const modalTitle = computed(() =>
   editingId.value ? 'Edit test method' : 'Add test method'
@@ -118,23 +133,28 @@ async function fetchItems() {
 function openAdd() {
   editingId.value = null;
   form.label = '';
+  form.slug = '';
+  resetSlugTouched();
   showModal.value = true;
 }
 
 function openEdit(item) {
   editingId.value = item.id;
   form.label = item.label ?? '';
+  form.slug = item.slug ?? '';
+  resetSlugTouched();
   showModal.value = true;
 }
 
 async function submitForm() {
   saving.value = true;
   try {
+    const payload = { label: form.label, slug: form.slug };
     if (editingId.value) {
-      await api.put(`/api/v1/admin/test-methods/${editingId.value}`, { label: form.label });
+      await api.put(`/api/v1/admin/test-methods/${editingId.value}`, payload);
       setSuccess('Test method updated.');
     } else {
-      await api.post('/api/v1/admin/test-methods', { label: form.label });
+      await api.post('/api/v1/admin/test-methods', payload);
       setSuccess('Test method created.');
     }
     showModal.value = false;

@@ -6,17 +6,21 @@ use App\Domains\Catalog\Models\Category;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\Admin\StoreCategoryRequest;
 use App\Http\Requests\Api\V1\Admin\UpdateCategoryRequest;
+use App\Http\Resources\Api\V1\CategoryResource;
+use Dedoc\Scramble\Attributes\Response;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class AdminCategoryController extends Controller
 {
-    public function index(): JsonResponse
+    #[Response(200, 'List of categories.', type: 'array{data: list<CategoryResource>}')]
+    public function index(Request $request): JsonResponse
     {
-        $categories = Category::orderBy('label', 'asc')->paginate(15);
+        $perPage = min(max((int) $request->query('per_page', 200), 1), 500);
 
-        return response()->json([
-            'data' => $categories
-        ], 200);
+        return CategoryResource::dataOnlyCollection(
+            Category::orderBy('label', 'asc')->paginate($perPage)
+        )->toResponse($request);
     }
 
     public function store(StoreCategoryRequest $request): JsonResponse
@@ -24,27 +28,24 @@ class AdminCategoryController extends Controller
         $category = Category::create($request->validated());
         AdminCatalogsController::forgetCache();
 
-        return response()->json([
-            'message' => 'Category created successfully',
-            'data' => $category
-        ], 201);
+        return (new CategoryResource($category))
+            ->additional(['message' => 'Category created successfully'])
+            ->response()
+            ->setStatusCode(201);
     }
 
-    public function show(Category $category): JsonResponse
+    public function show(Category $category): CategoryResource
     {
-        return response()->json([
-            'data' => $category
-        ], 200);
+        return new CategoryResource($category);
     }
 
     public function update(UpdateCategoryRequest $request, Category $category): JsonResponse
     {
         $category->update($request->validated());
 
-        return response()->json([
-            'message' => 'Category updated successfully',
-            'data' => $category
-        ], 200);
+        return (new CategoryResource($category))
+            ->additional(['message' => 'Category updated successfully'])
+            ->response();
     }
 
     public function destroy(Category $category): JsonResponse
@@ -53,7 +54,7 @@ class AdminCategoryController extends Controller
         AdminCatalogsController::forgetCache();
 
         return response()->json([
-            'message' => 'Category deleted successfully'
+            'message' => 'Category deleted successfully',
         ], 200);
     }
 }

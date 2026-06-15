@@ -21,7 +21,6 @@ class UpdateProductRequest extends FormRequest
     {
         $product = $this->route('product');
         return [
-            'sku' => ['sometimes', 'required', 'string', 'max:255', Rule::unique('products')->ignore($product)],
             'name' => ['sometimes', 'required', 'string', 'max:255'],
             'slug' => ['sometimes', 'nullable', 'string', 'max:255', Rule::unique('products')->ignore($product)],
             'grade' => ['nullable', 'string', 'max:255'],
@@ -59,7 +58,9 @@ class UpdateProductRequest extends FormRequest
             'packaging.*.volume_tiers.*.tier_name' => ['required', 'string', 'max:255'],
             'packaging.*.volume_tiers.*.min_quantity' => ['required', 'integer', 'min:0'],
             'packaging.*.volume_tiers.*.max_quantity' => ['nullable', 'integer', 'min:0'],
-            'packaging.*.volume_tiers.*.discount_percentage' => ['required', 'numeric', 'min:0', 'max:100'],
+            'packaging.*.volume_tiers.*.pricing_mode' => ['nullable', 'string', 'in:percentage,fixed_price'],
+            'packaging.*.volume_tiers.*.discount_percentage' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'packaging.*.volume_tiers.*.fixed_price' => ['nullable', 'numeric', 'min:0'],
             'nutritional_analysis' => ['nullable', 'array'],
             'nutritional_analysis.*.nutritional_parameter_id' => ['required', 'integer', 'exists:nutritional_parameters,id'],
             'nutritional_analysis.*.value' => ['nullable', 'string', 'max:255'],

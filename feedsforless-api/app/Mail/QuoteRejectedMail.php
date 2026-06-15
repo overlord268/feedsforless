@@ -2,26 +2,28 @@
 
 namespace App\Mail;
 
+use App\Domains\Quotes\Models\QuoteRequest;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class GuestQuoteInvitationMail extends Mailable
+class QuoteRejectedMail extends Mailable
 {
     use Queueable, SerializesModels;
 
     public function __construct(
-        public string $guestEmail,
+        public QuoteRequest $quoteRequest,
         public string $contactName,
-        public string $registerUrl
+        public ?string $reason,
+        public string $quotesUrl,
     ) {}
 
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'FeedsForLess – Create Your Account',
+            subject: 'FeedsForLess – Update on Quote Request #' . $this->quoteRequest->id,
             replyTo: [config('mail.from.address')],
         );
     }
@@ -29,7 +31,7 @@ class GuestQuoteInvitationMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'emails.guest-quote-invitation',
+            view: 'emails.quote-rejected',
         );
     }
 }

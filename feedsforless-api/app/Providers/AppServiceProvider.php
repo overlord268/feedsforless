@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\OpenApi\ConfigureScrambleDocumentation;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -12,5 +13,6 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        ConfigureScrambleDocumentation::register();
     }
 }

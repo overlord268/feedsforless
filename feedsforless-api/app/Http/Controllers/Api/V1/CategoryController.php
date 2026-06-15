@@ -8,6 +8,9 @@ use Illuminate\Http\JsonResponse;
 
 class CategoryController extends Controller
 {
+    /**
+     * @unauthenticated
+     */
     public function index(): JsonResponse
     {
         $categoriesTree = Category::whereNull('parent_id')

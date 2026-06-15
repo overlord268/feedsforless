@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { useAuthStore } from '../stores/auth';
+import { getChatSession } from '../composables/useChatSession';
 
 /**
  * API base URL: works in local dev and production without extra config.
@@ -41,6 +42,11 @@ api.interceptors.request.use(config => {
     if (authStore.token) {
         config.headers.Authorization = `Bearer ${authStore.token}`;
     }
+    const chatSession = getChatSession();
+    if (chatSession?.conversation_id && chatSession?.access_token) {
+        config.headers['X-Conversation-Id'] = String(chatSession.conversation_id);
+        config.headers['X-Conversation-Token'] = chatSession.access_token;
+    }
     return config;
 });
 
@@ -48,6 +54,10 @@ api.interceptors.response.use(
     response => response,
     error => {
         if (error.response?.status === 401) {
+            const url = error.config?.url || '';
+            if (String(url).includes('/conversations')) {
+                return Promise.reject(error);
+            }
             const authStore = useAuthStore();
             authStore.logout();
             window.location.href = '/';

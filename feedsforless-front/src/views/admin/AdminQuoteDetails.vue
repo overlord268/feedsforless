@@ -180,6 +180,12 @@
                  </div>
               </div>
 
+              <div v-if="showCustomerMessage" class="pt-4 border-t border-slate-200/80">
+                <label class="block text-xs font-medium text-slate-600 mb-1.5">Message to customer</label>
+                <p class="text-[11px] text-slate-500 mb-2">Included in the email when you set status to Rejected, Cancelled, or Expired.</p>
+                <textarea v-model="detailForm.customer_message" rows="3" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:ring-2 focus:ring-[#2962ff] focus:border-[#2962ff] bg-white resize-none" placeholder="Reason or next steps for the customer…"></textarea>
+              </div>
+
               <div class="pt-4 border-t border-slate-200/80">
                 <div class="flex justify-between items-center mb-1.5">
                   <label class="block text-xs font-medium text-slate-600">Internal Note (Admin Only)</label>
@@ -209,7 +215,11 @@ const quoteId = route.params.id;
 const quote = ref(null);
 const loading = ref(true);
 
-const detailForm = reactive({ status: 'pending', admin_note: '' });
+const detailForm = reactive({ status: 'pending', admin_note: '', customer_message: '' });
+
+const showCustomerMessage = computed(() =>
+  ['rejected', 'cancelled', 'expired'].includes(detailForm.status)
+);
 const priceForm = reactive({});
 const savingStatus = ref(false);
 const savingPrices = ref(false);
@@ -322,6 +332,7 @@ async function fetchQuote() {
     // Initialize forms
     detailForm.status = quote.value?.status || 'pending';
     detailForm.admin_note = quote.value?.admin_note || '';
+    detailForm.customer_message = quote.value?.customer_message || '';
     
     Object.keys(priceForm).forEach(k => delete priceForm[k]);
     (quote.value?.items || []).forEach(it => {
@@ -345,8 +356,10 @@ async function saveStatus() {
     await api.put(`/api/v1/admin/quote-requests/${quote.value.id}/status`, {
       status: detailForm.status,
       admin_note: detailForm.admin_note,
+      customer_message: detailForm.customer_message || null,
     });
     quote.value.status = detailForm.status;
+    quote.value.customer_message = detailForm.customer_message;
     toast.success('Status updated successfully.');
   } catch (e) {
     console.error(e);

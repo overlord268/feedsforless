@@ -41,6 +41,10 @@
             <svg class="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
             Quotes (RFQs)
           </router-link>
+          <router-link to="/admin/messages" :class="linkClass('/admin/messages')" class="flex items-center py-3 min-h-[44px] md:py-2.5 md:min-h-0" @click="$emit('close')">
+            <svg class="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+            Messages
+          </router-link>
         </div>
 
         <div>
@@ -53,6 +57,9 @@
             <router-link to="/admin/products" :class="linkClass('/admin/products')" class="flex items-center py-3 min-h-[44px] md:py-2.5 md:min-h-0" @click="$emit('close')">
               <svg class="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
               Products
+            </router-link>
+            <router-link to="/admin/products/import" :class="linkClass('/admin/products/import')" class="flex items-center py-3 min-h-[44px] md:py-2.5 md:min-h-0 pl-11" @click="$emit('close')">
+              Import
             </router-link>
             <router-link to="/admin/categories" :class="linkClass('/admin/categories')" class="flex items-center py-3 min-h-[44px] md:py-2.5 md:min-h-0" @click="$emit('close')">
               <svg class="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
@@ -68,10 +75,12 @@
           </router-link>
         </div>
         <div>
-          <router-link to="/admin/users" :class="linkClass('/admin/users')" class="flex items-center py-3 min-h-[44px] md:py-2.5 md:min-h-0" @click="$emit('close')">
-            <svg class="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-            System
-          </router-link>
+          <p class="px-3 text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-2">System</p>
+          <nav class="space-y-0.5">
+            <router-link to="/admin/users" :class="linkClass('/admin/users')" class="flex items-center py-3 min-h-[44px] md:py-2.5 md:min-h-0" @click="$emit('close')">Users</router-link>
+            <router-link to="/admin/agent-tokens" :class="linkClass('/admin/agent-tokens')" class="flex items-center py-3 min-h-[44px] md:py-2.5 md:min-h-0" @click="$emit('close')">AI Agent Tokens</router-link>
+            <router-link to="/admin/settings/ffl-sku" :class="linkClass('/admin/settings/ffl-sku')" class="flex items-center py-3 min-h-[44px] md:py-2.5 md:min-h-0" @click="$emit('close')">Configuration</router-link>
+          </nav>
         </div>
 
         <div>
@@ -97,6 +106,7 @@
         <nav class="space-y-0.5">
           <router-link to="/app/catalog" :class="linkClass('/app/catalog')" class="flex items-center py-3 min-h-[44px] md:py-2.5 md:min-h-0" @click="$emit('close')">Catalog</router-link>
           <router-link to="/quotes" :class="linkClass('/quotes')" class="flex items-center py-3 min-h-[44px] md:py-2.5 md:min-h-0" @click="$emit('close')">My Quotes</router-link>
+          <router-link to="/messages" :class="linkClass('/messages')" class="flex items-center py-3 min-h-[44px] md:py-2.5 md:min-h-0" @click="$emit('close')">Messages</router-link>
           <router-link to="/addresses" :class="linkClass('/addresses')" class="flex items-center py-3 min-h-[44px] md:py-2.5 md:min-h-0" @click="$emit('close')">Addresses</router-link>
         </nav>
       </template>

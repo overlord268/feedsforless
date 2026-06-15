@@ -5,9 +5,25 @@
 
 html {
   scroll-behavior: smooth;
+  overflow-x: hidden;
 }
 body {
-  @apply antialiased text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-900;
+  @apply antialiased text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-900 overflow-x-hidden;
+  min-height: 100dvh;
+}
+#app {
+  min-height: 100dvh;
+  width: 100%;
+}
+img, video, svg {
+  max-width: 100%;
+  height: auto;
+}
+.touch-manipulation {
+  touch-action: manipulation;
+}
+.safe-top {
+  padding-top: max(0px, env(safe-area-inset-top));
 }
 ::selection {
   @apply bg-emerald-200/80 text-slate-900;

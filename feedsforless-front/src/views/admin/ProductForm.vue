@@ -32,6 +32,7 @@
             v-if="activeTab === 0"
             :key="0"
             :form="form"
+            :is-edit="isEdit"
           />
           <ProductFormCategorizationTab
             v-else-if="activeTab === 1"
@@ -143,6 +144,15 @@ import { useRoute, useRouter } from 'vue-router';
 import api from '../../services/api';
 import { useToast } from '../../composables/useToast';
 import { useConfirm } from '../../composables/useConfirm';
+import {
+  canAddVolumeTier,
+  createVolumeTier,
+  derivePricingModeFromTiers,
+  finalizePresentationVolumeTiersForSave,
+  normalizePresentationVolumeTiers,
+  parseTierNumber,
+  validatePresentationVolumeTiers,
+} from '../../composables/useVolumeTierRules';
 import ProductFormHeader from '../../components/admin/ProductFormHeader.vue';
 import ProductFormTabsNav from '../../components/admin/ProductFormTabsNav.vue';
 import ProductFormSkeleton from '../../components/admin/ProductFormSkeleton.vue';
@@ -233,7 +243,8 @@ function defaultPackaging() {
     packaging_type_id: null,
     quantity_per_pallet: 40,
     base_price_per_unit: 0,
-    volume_tiers: [{ tier_name: '', min_quantity: 1, max_quantity: null, discount_percentage: 0 }],
+    tier_pricing_mode: 'percentage',
+    volume_tiers: [],
   };
 }
 function defaultNutritionalRow() {
@@ -276,10 +287,28 @@ function removePresentation(index) {
   form.packaging.splice(index, 1);
 }
 function addVolumeTier(presIndex) {
-  form.packaging[presIndex].volume_tiers.push({ tier_name: '', min_quantity: 0, max_quantity: null, discount_percentage: 0 });
+  const pres = form.packaging[presIndex];
+  if (!pres.tier_pricing_mode) {
+    pres.tier_pricing_mode = 'percentage';
+  }
+  const tiers = pres.volume_tiers || (pres.volume_tiers = []);
+  if (tiers.length === 0) {
+    tiers.push(createVolumeTier(pres, 1));
+    normalizePresentationVolumeTiers(pres);
+    return;
+  }
+  if (!canAddVolumeTier(tiers)) {
+    useToast().error('Set a "To" value on the last tier before adding another row.');
+    return;
+  }
+  const lastMax = Number(tiers[tiers.length - 1].max_quantity);
+  tiers.push(createVolumeTier(pres, lastMax));
+  normalizePresentationVolumeTiers(pres);
 }
 function removeVolumeTier(presIndex, tierIndex) {
-  form.packaging[presIndex].volume_tiers.splice(tierIndex, 1);
+  const pres = form.packaging[presIndex];
+  pres.volume_tiers.splice(tierIndex, 1);
+  normalizePresentationVolumeTiers(pres);
 }
 function addNutritionalRow() {
   form.nutritional_analysis.push(defaultNutritionalRow());
@@ -352,17 +381,25 @@ async function fetchProduct() {
     docFiles.coa = null;
 
     const pack = p.packaging_options || p.packaging || [];
-    form.packaging = pack.length ? pack.map(pa => ({
-      packaging_type_id: pa.packaging_type_id,
-      quantity_per_pallet: pa.quantity_per_pallet ?? 40,
-      base_price_per_unit: pa.base_price_per_unit ?? 0,
-      volume_tiers: (pa.volume_tiers || []).length ? pa.volume_tiers.map(t => ({
+    form.packaging = pack.length ? pack.map(pa => {
+      const volumeTiers = (pa.volume_tiers || []).map(t => ({
         tier_name: t.tier_name ?? '',
-        min_quantity: t.min_quantity ?? 0,
-        max_quantity: t.max_quantity ?? null,
-        discount_percentage: t.discount_percentage ?? 0,
-      })) : [{ tier_name: '', min_quantity: 1, max_quantity: null, discount_percentage: 0 }],
-    })) : [defaultPackaging()];
+        min_quantity: parseTierNumber(t.min_quantity) ?? 1,
+        max_quantity: parseTierNumber(t.max_quantity),
+        pricing_mode: t.pricing_mode === 'fixed_price' ? 'fixed_price' : 'percentage',
+        discount_percentage: parseTierNumber(t.discount_percentage) ?? 0,
+        fixed_price: parseTierNumber(t.fixed_price),
+      }));
+      const entry = {
+        packaging_type_id: pa.packaging_type_id,
+        quantity_per_pallet: pa.quantity_per_pallet ?? 40,
+        base_price_per_unit: parseTierNumber(pa.base_price_per_unit) ?? 0,
+        tier_pricing_mode: derivePricingModeFromTiers(volumeTiers),
+        volume_tiers: volumeTiers,
+      };
+      normalizePresentationVolumeTiers(entry);
+      return entry;
+    }) : [defaultPackaging()];
 
     const nut = p.nutritional_analysis || [];
     form.nutritional_analysis = nut.length ? nut.map(n => ({ nutritional_parameter_id: n.nutritional_parameter_id, value: String(n.value ?? ''), measure_unit_id: n.measure_unit_id })) : [defaultNutritionalRow()];
@@ -380,9 +417,8 @@ function buildPayload() {
   const leadTime = form.lead_time_days != null ? (form.lead_time_days === 0 ? null : new Date(Date.now() + form.lead_time_days * 86400000).toISOString().slice(0, 10)) : null;
   const maxLeadTime = form.max_lead_time_days != null ? (form.max_lead_time_days === 0 ? null : new Date(Date.now() + form.max_lead_time_days * 86400000).toISOString().slice(0, 10)) : null;
 
-  return {
+  const payload = {
     name: form.name,
-    sku: form.sku,
     grade: form.grade || null,
     base_price_ref: form.base_price_ref != null ? Number(form.base_price_ref) : null,
     description: form.description || null,
@@ -401,19 +437,27 @@ function buildPayload() {
     related_product_ids: form.related_product_ids,
     packaging: form.packaging
       .filter(p => p.packaging_type_id != null)
-      .map(p => ({
-        packaging_type_id: p.packaging_type_id,
-        quantity_per_pallet: p.quantity_per_pallet ?? 1,
-        base_price_per_unit: Number(p.base_price_per_unit) || 0,
-        volume_tiers: (p.volume_tiers || [])
-          .filter(t => t.min_quantity != null || t.tier_name)
-          .map(t => ({
+      .map(p => {
+        finalizePresentationVolumeTiersForSave(p);
+        const mode = p.tier_pricing_mode === 'fixed_price' ? 'fixed_price' : 'percentage';
+        return {
+          packaging_type_id: p.packaging_type_id,
+          quantity_per_pallet: p.quantity_per_pallet ?? 1,
+          base_price_per_unit: Number(p.base_price_per_unit) || 0,
+          volume_tiers: (p.volume_tiers || []).map(t => ({
             tier_name: t.tier_name || `Tier ${t.min_quantity}-${t.max_quantity ?? '∞'}`,
-            min_quantity: Number(t.min_quantity) || 0,
-            max_quantity: t.max_quantity != null && t.max_quantity !== '' ? Number(t.max_quantity) : null,
-            discount_percentage: Number(t.discount_percentage) || 0,
+            min_quantity: Number(t.min_quantity) || 1,
+            max_quantity: t.max_quantity != null && t.max_quantity !== '' && Number(t.max_quantity) > 0
+              ? Number(t.max_quantity)
+              : null,
+            pricing_mode: mode,
+            discount_percentage: mode === 'fixed_price' ? 0 : (Number(t.discount_percentage) || 0),
+            fixed_price: mode === 'fixed_price' && t.fixed_price != null && t.fixed_price !== ''
+              ? Number(t.fixed_price)
+              : null,
           })),
-      })),
+        };
+      }),
     nutritional_analysis: form.nutritional_analysis
       .filter(n => n.nutritional_parameter_id != null)
       .map(n => ({ nutritional_parameter_id: n.nutritional_parameter_id, value: String(n.value ?? ''), measure_unit_id: n.measure_unit_id || null })),
@@ -421,6 +465,8 @@ function buildPayload() {
       .filter(s => s.parameter_id != null && (s.specification !== '' || s.test_method_id != null))
       .map(s => ({ parameter_id: s.parameter_id, test_method_id: s.test_method_id, specification: s.specification || '', measure_unit_id: s.measure_unit_id })),
   };
+
+  return payload;
 }
 
 async function uploadDocument(file, type) {
@@ -459,8 +505,8 @@ function previewDocument(type) {
 
 async function save() {
   categoryError.value = false;
-  if (!form.name || !form.sku) {
-    useToast().error('Name and SKU are required.');
+  if (!form.name) {
+    useToast().error('Name is required.');
     return;
   }
   if (!form.category_ids || form.category_ids.length === 0) {
@@ -468,6 +514,15 @@ async function save() {
     activeTab.value = 1;
     useToast().error('Product must have at least one category. Select at least one in the "Categorization and Media" tab.');
     return;
+  }
+  for (let i = 0; i < form.packaging.length; i++) {
+    normalizePresentationVolumeTiers(form.packaging[i]);
+    const tierError = validatePresentationVolumeTiers(form.packaging[i], i);
+    if (tierError) {
+      activeTab.value = 2;
+      useToast().error(tierError);
+      return;
+    }
   }
   saving.value = true;
   try {

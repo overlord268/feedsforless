@@ -14,6 +14,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->validateCsrfTokens(except: [
             'api/*',
         ]);
+        $middleware->alias([
+            'auth.sanctum.attempt' => \App\Http\Middleware\AttemptSanctumAuth::class,
+            'auth.agent' => \App\Http\Middleware\AuthenticateAgentApiToken::class,
+            'super_admin' => \App\Http\Middleware\EnsureSuperAdmin::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

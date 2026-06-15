@@ -11,6 +11,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\DB;
+use App\Services\QuoteRequestNotifier;
 
 class AdminQuoteController extends Controller
 {
@@ -72,8 +73,11 @@ class AdminQuoteController extends Controller
                 'status' => 'quoted',
             ]);
 
-            return $quoteRequest->load(['items.product', 'items.packagingType']);
+            return $quoteRequest->load(['items.product', 'items.packagingType', 'requester']);
         });
+
+        app(QuoteRequestNotifier::class)->sendQuoted($updatedQuote);
+
         return response()->json([
             'message' => 'Quote prices updated successfully',
             'data' => new QuoteRequestResource($updatedQuote)
@@ -85,16 +89,32 @@ class AdminQuoteController extends Controller
         $validated = $request->validate([
             'status' => 'required|in:pending,quoted,accepted,rejected,expired,cancelled',
             'admin_note' => ['nullable', 'string', 'max:2000'],
+            'customer_message' => ['nullable', 'string', 'max:2000'],
         ]);
+
+        $previousStatus = $quoteRequest->status;
 
         $quoteRequest->update([
             'status' => $validated['status'],
             'admin_note' => $validated['admin_note'] ?? $quoteRequest->admin_note,
+            'customer_message' => array_key_exists('customer_message', $validated)
+                ? $validated['customer_message']
+                : $quoteRequest->customer_message,
         ]);
+
+        $quoteRequest = $quoteRequest->fresh(['requester', 'items.product', 'items.packagingType']);
+        $notifier = app(QuoteRequestNotifier::class);
+
+        if (
+            $previousStatus !== $validated['status']
+            && in_array($validated['status'], ['rejected', 'cancelled', 'expired'], true)
+        ) {
+            $notifier->sendRejected($quoteRequest, $quoteRequest->customer_message);
+        }
 
         return response()->json([
             'message' => 'Quote status updated',
-            'data' => new QuoteRequestResource($quoteRequest->fresh(['requester', 'items.product', 'items.packagingType']))
+            'data' => new QuoteRequestResource($quoteRequest)
         ]);
     }
 }

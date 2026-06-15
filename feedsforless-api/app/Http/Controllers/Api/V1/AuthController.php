@@ -16,6 +16,9 @@ use Illuminate\Http\Request;
 
 class AuthController extends Controller
 {
+    /**
+     * @unauthenticated
+     */
     public function register(
         RegisterB2bCustomerRequest $request,
         RegisterB2bCustomerAction $action
@@ -42,6 +45,9 @@ class AuthController extends Controller
         ], 201);
     }
 
+    /**
+     * @unauthenticated
+     */
     public function login(LoginRequest $request): JsonResponse
     {
         if (!Auth::attempt($request->validated())) {

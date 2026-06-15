@@ -53,11 +53,51 @@
           </router-link>
         </nav>
       </div>
+
+      <div v-if="showAccountNav" class="pt-6 border-t border-slate-200 dark:border-slate-700">
+        <h2 class="text-[11px] font-black text-slate-400/80 dark:text-slate-500 uppercase tracking-widest mb-4 px-2">
+          My Account
+        </h2>
+        <nav class="flex flex-col space-y-1">
+          <router-link
+            to="/quotes"
+            class="w-full text-left px-3 py-2 text-[13px] rounded-md transition-colors font-medium"
+            :class="accountLinkClass('/quotes')"
+          >
+            My Quotes
+          </router-link>
+          <router-link
+            to="/messages"
+            class="w-full text-left px-3 py-2 text-[13px] rounded-md transition-colors font-medium"
+            :class="accountLinkClass('/messages')"
+          >
+            Messages
+          </router-link>
+          <router-link
+            to="/addresses"
+            class="w-full text-left px-3 py-2 text-[13px] rounded-md transition-colors font-medium"
+            :class="accountLinkClass('/addresses')"
+          >
+            Addresses
+          </router-link>
+        </nav>
+      </div>
   </aside>
 </template>
 
 <script setup>
 import { computed } from 'vue';
+import { useRoute } from 'vue-router';
+import { useAuthStore } from '../../stores/auth';
+
+const route = useRoute();
+const authStore = useAuthStore();
+
+const showAccountNav = computed(() => {
+  if (!authStore.token) return false;
+  const roles = authStore.user?.roles || [];
+  return !roles.some(r => ['admin', 'Admin', 'Super Admin'].includes(r.name));
+});
 
 const props = defineProps({
   /** Categories with precomputed route (link) for each. Each item: { id, label, link }. */
@@ -122,5 +162,12 @@ function desktopLinkClass(isCategory, cat) {
   return active
     ? 'bg-[#2962ff] dark:bg-blue-600 text-white font-bold'
     : 'text-slate-600 dark:text-slate-300 font-medium hover:text-[#2962ff] dark:hover:text-blue-400';
+}
+
+function accountLinkClass(path) {
+  const active = route.path === path || route.path.startsWith(`${path}/`);
+  return active
+    ? 'bg-[#2962ff] dark:bg-blue-600 text-white font-bold'
+    : 'text-slate-600 dark:text-slate-300 hover:text-[#2962ff] dark:hover:text-blue-400';
 }
 </script>

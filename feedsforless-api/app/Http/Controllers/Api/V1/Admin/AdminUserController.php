@@ -6,20 +6,20 @@ use App\Domains\B2B\Models\User;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\Admin\StoreUserRequest;
 use App\Http\Requests\Api\V1\Admin\UpdateUserRequest;
+use App\Http\Resources\Api\V1\UserResource;
+use Dedoc\Scramble\Attributes\Response;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
-
 class AdminUserController extends Controller
 {
+    #[Response(200, 'List of users.', type: 'array{data: list<UserResource>}')]
     public function index(): JsonResponse
     {
-        $users = User::with('roles')->orderBy('created_at', 'desc')->paginate(15);
-
-        return response()->json([
-            'data' => $users
-        ], 200);
+        return UserResource::dataOnlyCollection(
+            User::with('roles')->orderBy('created_at', 'desc')->paginate(15)
+        )->toResponse(request());
     }
 
     public function store(StoreUserRequest $request): JsonResponse
@@ -29,17 +29,15 @@ class AdminUserController extends Controller
 
         $user = User::create($data);
 
-        return response()->json([
-            'message' => 'User created successfully',
-            'data' => $user
-        ], 201);
+        return (new UserResource($user->load('roles')))
+            ->additional(['message' => 'User created successfully'])
+            ->response()
+            ->setStatusCode(201);
     }
 
-    public function show(User $user): JsonResponse
+    public function show(User $user): UserResource
     {
-        return response()->json([
-            'data' => $user
-        ], 200);
+        return new UserResource($user->load('roles'));
     }
 
     public function update(UpdateUserRequest $request, User $user): JsonResponse
@@ -54,19 +52,16 @@ class AdminUserController extends Controller
 
         $user->update($data);
 
-        return response()->json([
-            'message' => 'User updated successfully',
-            'data' => $user
-        ], 200);
+        return (new UserResource($user->load('roles')))
+            ->additional(['message' => 'User updated successfully'])
+            ->response();
     }
 
     public function destroy(User $user): JsonResponse
     {
         $user->delete();
 
-        return response()->json([
-            'message' => 'User deleted successfully'
-        ], 200);
+        return response()->json(['message' => 'User deleted successfully'], 200);
     }
 
     public function assignRole(Request $request, User $user): JsonResponse
@@ -76,9 +71,8 @@ class AdminUserController extends Controller
         ]);
         $user->syncRoles([$validated['role']]);
 
-        return response()->json([
-            'message' => 'Role updated successfully',
-            'data' => $user->load('roles'),
-        ], 200);
+        return (new UserResource($user->load('roles')))
+            ->additional(['message' => 'Role updated successfully'])
+            ->response();
     }
 }

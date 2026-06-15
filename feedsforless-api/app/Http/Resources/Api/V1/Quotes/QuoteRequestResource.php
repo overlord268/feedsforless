@@ -12,11 +12,26 @@ class QuoteRequestResource extends JsonResource
         return [
             'id' => $this->id,
             'status' => $this->status,
-            'admin_note' => $this->admin_note,
+            'admin_note' => $this->when(
+                $request->user() && $this->userIsAdmin($request),
+                $this->admin_note
+            ),
+            'customer_message' => $this->when(
+                in_array($this->status, ['quoted', 'rejected', 'cancelled', 'expired'], true),
+                $this->customer_message
+            ),
             'delivery_zip' => $this->delivery_zip,
             'requires_liftgate' => (bool) $this->requires_liftgate,
             'requires_appointment' => (bool) $this->requires_appointment,
             'total_estimated_cost' => $this->total_estimated_cost,
+            'created_at' => $this->created_at?->toIso8601String(),
+            'updated_at' => $this->updated_at?->toIso8601String(),
+            'address' => $this->whenLoaded('address', fn () => $this->address ? [
+                'id' => $this->address->id,
+                'address_line_1' => $this->address->address_line_1,
+                'city' => $this->address->city,
+                'zip_code' => $this->address->zip_code,
+            ] : null),
             'customer_name' => $this->request_by_id
                 ? $this->whenLoaded('requester', fn () => trim($this->requester->first_name . ' ' . $this->requester->last_name) ?: $this->requester->email)
                 : ($this->guest_contact_name ?: $this->guest_email),
@@ -56,5 +71,16 @@ class QuoteRequestResource extends JsonResource
             }),
             'items' => QuoteRequestItemResource::collection($this->whenLoaded('items')),
         ];
+    }
+
+    private function userIsAdmin(Request $request): bool
+    {
+        $user = $request->user();
+
+        return $user && (
+            $user->hasRole('admin')
+            || $user->hasRole('Admin')
+            || $user->hasRole('Super Admin')
+        );
     }
 }

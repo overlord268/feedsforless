@@ -4,47 +4,61 @@ namespace App\Http\Controllers\Api\V1\Admin;
 
 use App\Domains\Catalog\Models\TypicalApplication;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\V1\Admin\StoreTypicalApplicationRequest;
+use App\Http\Requests\Api\V1\Admin\UpdateTypicalApplicationRequest;
+use App\Http\Resources\Api\V1\TypicalApplicationResource;
+use Dedoc\Scramble\Attributes\Response;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class AdminTypicalApplicationController extends Controller
 {
+    #[Response(200, 'List of typical applications.', type: 'array{data: list<TypicalApplicationResource>}')]
     public function index(): JsonResponse
     {
-        $items = TypicalApplication::orderBy('label', 'asc')->paginate(50);
-        return response()->json(['data' => $items], 200);
+        return TypicalApplicationResource::dataOnlyCollection(
+            TypicalApplication::orderBy('label', 'asc')->paginate(50)
+        )->toResponse(request());
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(StoreTypicalApplicationRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'label' => ['required', 'string', 'max:255'],
-            'description' => ['nullable', 'string'],
-        ]);
+        $validated = $request->validated();
+        $validated['slug'] = $validated['slug'] ?? TypicalApplication::makeUniqueSlug($validated['label']);
         $item = TypicalApplication::create($validated);
         AdminCatalogsController::forgetCache();
-        return response()->json(['message' => 'Typical application created successfully', 'data' => $item], 201);
+
+        return (new TypicalApplicationResource($item))
+            ->additional(['message' => 'Typical application created successfully'])
+            ->response()
+            ->setStatusCode(201);
     }
 
-    public function show(TypicalApplication $typicalApplication): JsonResponse
+    public function show(TypicalApplication $typicalApplication): TypicalApplicationResource
     {
-        return response()->json(['data' => $typicalApplication], 200);
+        return new TypicalApplicationResource($typicalApplication);
     }
 
-    public function update(Request $request, TypicalApplication $typicalApplication): JsonResponse
+    public function update(UpdateTypicalApplicationRequest $request, TypicalApplication $typicalApplication): JsonResponse
     {
-        $validated = $request->validate([
-            'label' => ['sometimes', 'required', 'string', 'max:255'],
-            'description' => ['nullable', 'string'],
-        ]);
+        $validated = $request->validated();
+
+        if (array_key_exists('slug', $validated) && ($validated['slug'] === null || $validated['slug'] === '')) {
+            unset($validated['slug']);
+        }
+
         $typicalApplication->update($validated);
-        return response()->json(['message' => 'Typical application updated successfully', 'data' => $typicalApplication], 200);
+        AdminCatalogsController::forgetCache();
+
+        return (new TypicalApplicationResource($typicalApplication))
+            ->additional(['message' => 'Typical application updated successfully'])
+            ->response();
     }
 
     public function destroy(TypicalApplication $typicalApplication): JsonResponse
     {
         $typicalApplication->delete();
         AdminCatalogsController::forgetCache();
+
         return response()->json(['message' => 'Typical application deleted successfully'], 200);
     }
 }

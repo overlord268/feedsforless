@@ -12,8 +12,18 @@ class VolumePricingTier extends Model
         'tier_name',
         'min_quantity',
         'max_quantity',
+        'pricing_mode',
         'discount_percentage',
+        'fixed_price',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'discount_percentage' => 'float',
+            'fixed_price' => 'float',
+        ];
+    }
 
     public function productPackaging(): BelongsTo
     {

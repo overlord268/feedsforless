@@ -22,6 +22,7 @@ class ProductResource extends JsonResource
             'stock_status' => $this->stock_status,
             'availability' => $this->availability,
             'status' => $this->status,
+            'deleted_at' => $this->deleted_at?->toIso8601String(),
             'categories' => $this->whenLoaded('categories', fn() => $this->categories->map(fn($c) => [
                 'id' => $c->id,
                 'label' => $c->label,
@@ -41,7 +42,9 @@ class ProductResource extends JsonResource
                         'tier_name' => $t->tier_name,
                         'min_quantity' => $t->min_quantity,
                         'max_quantity' => $t->max_quantity,
+                        'pricing_mode' => $t->pricing_mode ?? 'percentage',
                         'discount_percentage' => $t->discount_percentage,
+                        'fixed_price' => $t->fixed_price !== null ? (float) $t->fixed_price : null,
                     ]) : [],
                 ];
             })),

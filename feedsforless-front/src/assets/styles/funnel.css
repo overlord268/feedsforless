@@ -1,0 +1,138 @@
+/* Market insights funnel — Hanken Grotesk (headlines) + Inter (body), per Figma export */
+@import url('https://fonts.googleapis.com/css2?family=Hanken+Grotesk:ital,wght@0,400;0,700;0,800;1,400&family=Inter:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
+
+.funnel-page {
+  --funnel-font-headline: 'Hanken Grotesk', system-ui, sans-serif;
+  --funnel-font-body: 'Inter', system-ui, sans-serif;
+  --funnel-inverse: #001d34;
+  --funnel-primary: #2563eb;
+  --funnel-primary-dim: #b4c5ff;
+  --funnel-surface-variant: #e0e3e5;
+  --funnel-outline: #737686;
+  --funnel-outline-variant: #c3c6d7;
+  --funnel-tertiary: #007d57;
+  font-family: var(--funnel-font-body);
+  color: #191c1e;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.funnel-page .font-headline,
+.funnel-page h1,
+.funnel-page h2,
+.funnel-page h3,
+.funnel-page h4,
+.funnel-page h5,
+.funnel-page .funnel-overline,
+.funnel-page .funnel-feature-title,
+.funnel-page .funnel-stat-value {
+  font-family: var(--funnel-font-headline);
+}
+
+.funnel-page p,
+.funnel-page label,
+.funnel-page input,
+.funnel-page button,
+.funnel-page a,
+.funnel-page .funnel-label,
+.funnel-page .funnel-btn-primary,
+.funnel-page .funnel-input {
+  font-family: var(--funnel-font-body);
+}
+
+.funnel-glass {
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+.funnel-industrial-bg {
+  background-image:
+    linear-gradient(rgba(0, 29, 52, 0.45), rgba(0, 29, 52, 0.45)),
+    url('https://lh3.googleusercontent.com/aida-public/AB6AXuCDDieo5LSDXeMG7IjPb2f5NZjPOg9IZZ7or_t1abR_cECmrss-x5FpfEGspmd0O83cj-cbML_95UCcOMZ_gSK_3izs50pb5rXRu9TXswMozWPOrV5cgLCjS3mbcheekVAokncfO2zpt181Nx7iwTxH1BnUV-0CiC7EdTMjhkzQm1g2vHLoYsTkRvBlnpd8PeGnqj0gpF4b1U-XxY1DSjpeqwQarszvrLE4-d-BgFYpnmuMZqBmcEOXKz-S2Zdxwers78uacoC3C8Y');
+  background-size: cover;
+  background-position: center;
+}
+
+.funnel-hero-grid {
+  background-image: radial-gradient(circle at 2px 2px, rgba(255, 255, 255, 0.15) 1px, transparent 0);
+  background-size: 40px 40px;
+}
+
+.funnel-input {
+  width: 100%;
+  background: #fff;
+  border: 1px solid var(--funnel-outline-variant);
+  border-radius: 0.375rem;
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  color: #0f172a;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.funnel-input::placeholder {
+  color: #94a3b8;
+}
+
+.funnel-input:focus {
+  border-color: var(--funnel-primary);
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+}
+
+.funnel-input:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.funnel-label {
+  display: block;
+  font-family: var(--funnel-font-body);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--funnel-outline);
+}
+
+.funnel-btn-primary {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  background: var(--funnel-primary);
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 700;
+  padding: 1rem 1.5rem;
+  border-radius: 0.375rem;
+  border: none;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  transition: background 0.15s, box-shadow 0.15s, opacity 0.15s;
+}
+
+.funnel-btn-primary:hover:not(:disabled) {
+  background: #1d4ed8;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.funnel-btn-primary:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.funnel-desktop-headline {
+  font-family: var(--funnel-font-headline);
+  font-size: clamp(2.75rem, 4.2vw, 4.5rem);
+  font-weight: 800;
+  line-height: 0.92;
+  letter-spacing: -0.02em;
+}
+
+.funnel-desktop-headline span {
+  display: block;
+}

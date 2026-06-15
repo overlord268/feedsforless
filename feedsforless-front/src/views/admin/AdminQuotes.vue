@@ -1,35 +1,35 @@
 <template>
-  <div class="space-y-5">
+  <div class="space-y-4 sm:space-y-5">
     <div>
-      <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Quotes (RFQs)</h1>
-      <p class="text-slate-500 mt-0.5">Requests sent by customers. Review, set prices and change status.</p>
+      <h1 class="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Quotes (RFQs)</h1>
+      <p class="text-slate-500 mt-0.5 text-sm">Requests sent by customers. Review, set prices and change status.</p>
     </div>
 
-    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-card overflow-hidden">
+    <div class="bg-white dark:bg-slate-800 rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-card overflow-hidden">
       <div class="overflow-x-auto table-scroll">
-        <table class="w-full text-sm min-w-[600px]">
-          <thead class="bg-slate-50/80 border-b border-slate-200">
+        <table class="w-full text-sm min-w-[560px]">
+          <thead class="bg-slate-50/80 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700">
             <tr class="text-left">
-              <th class="px-6 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">ID</th>
-              <th class="px-6 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Customer</th>
-              <th class="px-6 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">ZIP</th>
-              <th class="px-6 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
-              <th class="px-6 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Total est.</th>
-              <th class="px-6 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Actions</th>
+              <th class="px-3 sm:px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">ID</th>
+              <th class="px-3 sm:px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Customer</th>
+              <th class="px-3 sm:px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden sm:table-cell">ZIP</th>
+              <th class="px-3 sm:px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
+              <th class="px-3 sm:px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden md:table-cell">Total est.</th>
+              <th class="px-3 sm:px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100">
-            <tr v-for="quote in quotes" :key="quote.id" class="hover:bg-slate-50/70 transition-colors">
-              <td class="px-6 py-4 text-slate-700 font-mono">#{{ quote.id }}</td>
-              <td class="px-6 py-4 text-slate-800">{{ quote.customer_name || quote.requester?.email || '—' }}</td>
-              <td class="px-6 py-4 text-slate-600">{{ quote.delivery_zip }}</td>
-              <td class="px-6 py-4">
+            <tr v-for="quote in quotes" :key="quote.id" class="hover:bg-slate-50/70 dark:hover:bg-slate-700/30 transition-colors">
+              <td class="px-3 sm:px-6 py-3.5 sm:py-4 text-slate-700 dark:text-slate-300 font-mono">#{{ quote.id }}</td>
+              <td class="px-3 sm:px-6 py-3.5 sm:py-4 text-slate-800 dark:text-slate-200">{{ quote.customer_name || quote.requester?.email || '—' }}</td>
+              <td class="px-3 sm:px-6 py-3.5 sm:py-4 text-slate-600 dark:text-slate-400 hidden sm:table-cell">{{ quote.delivery_zip }}</td>
+              <td class="px-3 sm:px-6 py-3.5 sm:py-4">
                 <span :class="statusClass(quote.status)" class="inline-flex px-2.5 py-0.5 rounded-md text-xs font-semibold capitalize">
                   {{ quote.status }}
                 </span>
               </td>
-              <td class="px-6 py-4 text-slate-700 font-medium">${{ formatNum(quote.total_estimated_cost) }}</td>
-              <td class="px-6 py-4">
+              <td class="px-3 sm:px-6 py-3.5 sm:py-4 text-slate-700 dark:text-slate-300 font-medium hidden md:table-cell">${{ formatNum(quote.total_estimated_cost) }}</td>
+              <td class="px-3 sm:px-6 py-3.5 sm:py-4">
                 <router-link
                   :to="{ name: 'AdminQuoteDetails', params: { id: quote.id } }"
                   class="text-emerald-600 hover:underline font-medium"

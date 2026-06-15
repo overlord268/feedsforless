@@ -23,6 +23,7 @@
     <CrudTable :columns="columns" :items="items" :loading="loading">
       <template #row="{ item }">
         <td class="px-6 py-4 text-slate-700">{{ item.id }}</td>
+        <td class="px-6 py-4 font-mono text-xs text-slate-600">{{ item.slug }}</td>
         <td class="px-6 py-4 text-slate-800">{{ item.label }}</td>
         <td class="px-6 py-4 text-slate-600">{{ item.requirement ?? '—' }}</td>
         <td class="px-6 py-4">
@@ -65,7 +66,18 @@
         label="Label"
         type="text"
         required
-        placeholder="e.g. Refrigerated"
+        placeholder="e.g. Store in dry place"
+        @input="syncSlugFromLabel"
+      />
+      <FormInput
+        v-model="form.slug"
+        variant="admin"
+        label="Slug"
+        type="text"
+        required
+        placeholder="e.g. store-dry"
+        hint="Used in Excel import. Must match exactly."
+        @input="onSlugInput"
       />
       <FormInput
         v-model="form.requirement"
@@ -85,9 +97,11 @@ import { useConfirm } from '../../composables/useConfirm';
 import CrudTable from '../../components/admin/CrudTable.vue';
 import SimpleFormModal from '../../components/admin/SimpleFormModal.vue';
 import FormInput from '../../components/ui/FormInput.vue';
+import { useCatalogSlugForm } from '../../composables/useCatalogSlug';
 
 const columns = [
   { key: 'id', label: 'ID' },
+  { key: 'slug', label: 'Slug' },
   { key: 'label', label: 'Label' },
   { key: 'requirement', label: 'Requirement' },
   { key: 'actions', label: 'Actions', thClass: 'px-6 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider w-24' },
@@ -99,7 +113,8 @@ const showModal = ref(false);
 const saving = ref(false);
 const editingId = ref(null);
 const successMessage = ref('');
-const form = reactive({ label: '', requirement: '' });
+const form = reactive({ label: '', slug: '', requirement: '' });
+const { onSlugInput, syncSlugFromLabel, resetSlugTouched } = useCatalogSlugForm(form);
 
 const modalTitle = computed(() =>
   editingId.value ? 'Edit handling spec' : 'Add handling spec'
@@ -127,25 +142,30 @@ async function fetchItems() {
 function openAdd() {
   editingId.value = null;
   form.label = '';
+  form.slug = '';
   form.requirement = '';
+  resetSlugTouched();
   showModal.value = true;
 }
 
 function openEdit(item) {
   editingId.value = item.id;
   form.label = item.label ?? '';
+  form.slug = item.slug ?? '';
   form.requirement = item.requirement ?? '';
+  resetSlugTouched();
   showModal.value = true;
 }
 
 async function submitForm() {
   saving.value = true;
   try {
+    const payload = { label: form.label, slug: form.slug, requirement: form.requirement || null };
     if (editingId.value) {
-      await api.put(`/api/v1/admin/handling-specs/${editingId.value}`, { label: form.label, requirement: form.requirement || null });
+      await api.put(`/api/v1/admin/handling-specs/${editingId.value}`, payload);
       setSuccess('Handling spec updated.');
     } else {
-      await api.post('/api/v1/admin/handling-specs', { label: form.label, requirement: form.requirement || null });
+      await api.post('/api/v1/admin/handling-specs', payload);
       setSuccess('Handling spec created.');
     }
     showModal.value = false;

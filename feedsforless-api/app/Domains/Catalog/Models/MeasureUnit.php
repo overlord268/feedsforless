@@ -2,9 +2,12 @@
 
 namespace App\Domains\Catalog\Models;
 
+use App\Domains\Catalog\Models\Concerns\HasCatalogSlug;
 use Illuminate\Database\Eloquent\Model;
 
 class MeasureUnit extends Model
 {
-    protected $fillable = ['label', 'notation'];
+    use HasCatalogSlug;
+
+    protected $fillable = ['label', 'slug', 'notation'];
 }

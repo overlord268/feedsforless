@@ -54,10 +54,11 @@
 </template>
 
 <script setup>
-import { reactive, ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { reactive, ref, onMounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
 
+const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
 
@@ -71,6 +72,13 @@ const form = reactive({
     email: '',
     password: '',
     password_confirmation: ''
+});
+
+onMounted(() => {
+    const email = route.query.email;
+    if (typeof email === 'string' && email.includes('@')) {
+        form.email = email;
+    }
 });
 
 const handleSubmit = async () => {

@@ -3,6 +3,11 @@ import { useAuthStore } from '../stores/auth';
 
 const routes = [
     {
+        path: '/market-insights',
+        name: 'MarketInsights',
+        component: () => import('../views/funnel/MarketInsightsFunnel.vue'),
+    },
+    {
         path: '/',
         component: () => import('../layouts/PublicLayout.vue'),
         children: [
@@ -69,6 +74,18 @@ const routes = [
                 path: 'quotes',
                 name: 'CustomerQuotes',
                 component: () => import('../views/customer/CustomerQuotes.vue'),
+                meta: { requiresAuth: true }
+            },
+            {
+                path: 'quotes/:id',
+                name: 'CustomerQuoteDetails',
+                component: () => import('../views/customer/CustomerQuoteDetails.vue'),
+                meta: { requiresAuth: true }
+            },
+            {
+                path: 'messages',
+                name: 'CustomerMessages',
+                component: () => import('../views/customer/CustomerMessages.vue'),
                 meta: { requiresAuth: true }
             },
             {
@@ -145,6 +162,12 @@ const routes = [
                 meta: { requiresAdmin: true }
             },
             {
+                path: 'admin/products/import',
+                name: 'AdminProductImport',
+                component: () => import('../views/admin/AdminProductImport.vue'),
+                meta: { requiresAdmin: true }
+            },
+            {
                 path: 'admin/products/create',
                 name: 'AdminProductCreate',
                 component: () => import('../views/admin/ProductForm.vue'),
@@ -175,9 +198,27 @@ const routes = [
                 meta: { requiresAdmin: true }
             },
             {
+                path: 'admin/messages',
+                name: 'AdminMessages',
+                component: () => import('../views/admin/AdminMessages.vue'),
+                meta: { requiresAdmin: true, fullBleed: true }
+            },
+            {
                 path: 'admin/users',
                 name: 'AdminUsers',
                 component: () => import('../views/admin/AdminUsers.vue'),
+                meta: { requiresAdmin: true }
+            },
+            {
+                path: 'admin/agent-tokens',
+                name: 'AdminAgentTokens',
+                component: () => import('../views/admin/AdminAgentTokens.vue'),
+                meta: { requiresAdmin: true }
+            },
+            {
+                path: 'admin/settings/ffl-sku',
+                name: 'AdminFflSkuConfiguration',
+                component: () => import('../views/admin/AdminFflSkuConfiguration.vue'),
                 meta: { requiresAdmin: true }
             },
             {
@@ -288,7 +329,8 @@ router.beforeEach(async (to, from) => {
     }
 
     // Logged in as ADMIN: public catalog → use app layout (/app/...)
-    if (isAuthenticated && userIsAdmin(authStore) && (to.name === 'PublicHome' || to.name === 'Catalog' || to.name === 'ProductDetail' || to.name === 'ProductDetailLegacy' || to.name === 'RequestQuote' || to.name === 'CategoryHub' || to.name === 'CategoryHubNested')) {
+    const publicCatalogNames = ['PublicHome', 'Catalog', 'ProductDetail', 'ProductDetailLegacy', 'RequestQuote', 'CategoryHub', 'CategoryHubNested'];
+    if (isAuthenticated && userIsAdmin(authStore) && publicCatalogNames.includes(to.name)) {
         if (to.name === 'RequestQuote') return { name: 'AppRequestQuote', query: to.query };
         if (to.name === 'ProductDetail' && to.params.slug) return { name: 'AppProductDetail', params: { slug: to.params.slug }, query: to.query };
         if (to.name === 'ProductDetailLegacy' && to.params.id) return { name: 'AppProductDetailLegacy', params: { id: to.params.id }, query: to.query };
