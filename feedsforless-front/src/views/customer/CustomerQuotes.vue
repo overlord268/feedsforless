@@ -20,24 +20,35 @@
         </button>
       </div>
 
-      <div class="flex gap-2 mb-6">
-        <button
-          v-for="tab in filterTabs"
-          :key="tab.key"
-          type="button"
-          class="px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
-          :class="filter === tab.key ? 'bg-[#2962ff] text-white' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-[#2962ff]/40'"
-          @click="filter = tab.key"
-        >
-          {{ tab.label }}
-          <span v-if="tab.count != null" class="ml-1 opacity-80">({{ tab.count }})</span>
-        </button>
+      <div class="flex flex-col sm:flex-row sm:items-center gap-3 mb-6">
+        <div class="flex gap-2 flex-wrap">
+          <button
+            v-for="tab in filterTabs"
+            :key="tab.key"
+            type="button"
+            class="px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
+            :class="filter === tab.key ? 'bg-[#2962ff] text-white' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-[#2962ff]/40'"
+            @click="filter = tab.key"
+          >
+            {{ tab.label }}
+            <span v-if="tab.count != null" class="ml-1 opacity-80">({{ tab.count }})</span>
+          </button>
+        </div>
+        <div class="relative sm:ml-auto w-full sm:w-56">
+          <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          <input
+            v-model="searchQuery"
+            type="search"
+            placeholder="Search quotes…"
+            class="w-full pl-8 pr-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-sm"
+          >
+        </div>
       </div>
 
       <div v-if="loading" class="py-16 text-center text-slate-500">Loading quotes…</div>
 
-      <div v-else-if="filteredQuotes.length === 0" class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-12 text-center">
-        <p class="text-slate-500 mb-4">{{ emptyMessage }}</p>
+      <div v-else-if="displayQuotes.length === 0" class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-12 text-center">
+        <p class="text-slate-500 mb-4">{{ searchQuery ? 'No quotes match your search.' : emptyMessage }}</p>
         <router-link to="/catalog" class="inline-flex items-center px-4 py-2 rounded-xl bg-[#2962ff] text-white text-sm font-bold hover:bg-blue-700 transition-colors">
           Browse catalog
         </router-link>
@@ -45,7 +56,7 @@
 
       <div v-else class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden divide-y divide-slate-100 dark:divide-slate-700">
         <router-link
-          v-for="quote in filteredQuotes"
+          v-for="quote in displayQuotes"
           :key="quote.id"
           :to="{ name: 'CustomerQuoteDetails', params: { id: quote.id } }"
           class="flex flex-col sm:flex-row sm:items-center gap-4 px-5 py-4 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors group"
@@ -151,6 +162,7 @@ import api from '../../services/api';
 import AddressFormModal from '../../components/customer/AddressFormModal.vue';
 import { useToast } from '../../composables/useToast';
 import { useConfirm } from '../../composables/useConfirm';
+import { useSortableTable } from '../../composables/useSortableTable';
 import {
   quoteStatusLabel,
   quoteStatusClass,
@@ -184,6 +196,23 @@ const filteredQuotes = computed(() => {
   if (filter.value === 'active') return quotes.value.filter(q => quoteIsActive(q.status));
   if (filter.value === 'closed') return quotes.value.filter(q => quoteIsClosed(q.status));
   return quotes.value;
+});
+
+const { searchQuery, processedItems: displayQuotes } = useSortableTable(filteredQuotes, {
+  defaultSort: { key: 'id', dir: 'desc' },
+  getSortValue: (quote, key) => {
+    if (key === 'id') return quote.id;
+    if (key === 'status') return quote.status;
+    if (key === 'total') return Number(quote.total_estimated_cost ?? 0);
+    return quote[key];
+  },
+  getSearchText: (quote) => [
+    quote.id,
+    quote.status,
+    quote.delivery_zip,
+    quote.total_estimated_cost,
+    quote.items?.length,
+  ].join(' '),
 });
 
 const filterTabs = computed(() => [

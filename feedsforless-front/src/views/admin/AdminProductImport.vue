@@ -161,25 +161,34 @@
               Skip all visible
             </button>
           </template>
+          <div class="relative w-full sm:w-48 sm:ml-auto">
+            <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            <input
+              v-model="previewSearchQuery"
+              type="search"
+              placeholder="Search rows…"
+              class="w-full pl-8 pr-2 py-1.5 text-sm border border-slate-200 rounded-lg bg-white"
+            >
+          </div>
         </div>
 
-        <div class="overflow-x-auto rounded-xl border border-slate-200">
+        <div class="overflow-x-auto rounded-xl border border-slate-200 bg-white">
           <table class="min-w-full text-sm">
-            <thead class="bg-slate-50 text-left text-xs uppercase text-slate-500">
+            <thead class="bg-slate-50 text-left text-xs uppercase text-slate-500 border-b border-slate-200">
               <tr>
-                <th class="px-3 py-2">Sheet</th>
-                <th class="px-3 py-2">Row</th>
-                <th class="px-3 py-2">Slug</th>
-                <th class="px-3 py-2">Label</th>
-                <th class="px-3 py-2">Action</th>
-                <th class="px-3 py-2">{{ importCompleted ? 'Result' : 'Status' }}</th>
+                <th class="px-3 py-2 cursor-pointer select-none hover:text-slate-700" @click="togglePreviewSort('sheet')"><span class="inline-flex items-center gap-1">Sheet <TableSortIcon :active="previewSort.key === 'sheet'" :dir="previewSort.dir" /></span></th>
+                <th class="px-3 py-2 cursor-pointer select-none hover:text-slate-700" @click="togglePreviewSort('row')"><span class="inline-flex items-center gap-1">Row <TableSortIcon :active="previewSort.key === 'row'" :dir="previewSort.dir" /></span></th>
+                <th class="px-3 py-2 cursor-pointer select-none hover:text-slate-700" @click="togglePreviewSort('slug')"><span class="inline-flex items-center gap-1">Slug <TableSortIcon :active="previewSort.key === 'slug'" :dir="previewSort.dir" /></span></th>
+                <th class="px-3 py-2 cursor-pointer select-none hover:text-slate-700" @click="togglePreviewSort('label')"><span class="inline-flex items-center gap-1">Label <TableSortIcon :active="previewSort.key === 'label'" :dir="previewSort.dir" /></span></th>
+                <th class="px-3 py-2 cursor-pointer select-none hover:text-slate-700" @click="togglePreviewSort('action')"><span class="inline-flex items-center gap-1">Action <TableSortIcon :active="previewSort.key === 'action'" :dir="previewSort.dir" /></span></th>
+                <th class="px-3 py-2 cursor-pointer select-none hover:text-slate-700" @click="togglePreviewSort('status')"><span class="inline-flex items-center gap-1">{{ importCompleted ? 'Result' : 'Status' }} <TableSortIcon :active="previewSort.key === 'status'" :dir="previewSort.dir" /></span></th>
                 <th class="px-3 py-2">Conflicts / details</th>
                 <th class="px-3 py-2">{{ importCompleted ? 'Outcome' : 'Decision' }}</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100">
               <tr
-                v-for="row in filteredPreview"
+                v-for="row in displayPreview"
                 :key="row.key"
                 class="align-top"
                 :class="rowClass(row)"
@@ -244,6 +253,8 @@
 import { computed, ref } from 'vue';
 import api from '../../services/api';
 import { useToast } from '../../composables/useToast';
+import { useSortableTable } from '../../composables/useSortableTable';
+import TableSortIcon from '../../components/admin/TableSortIcon.vue';
 
 const fileInputRef = ref(null);
 const selectedFile = ref(null);
@@ -289,6 +300,16 @@ const filteredPreview = computed(() => {
   });
 });
 
+const {
+  searchQuery: previewSearchQuery,
+  sort: previewSort,
+  processedItems: displayPreview,
+  toggleSort: togglePreviewSort,
+} = useSortableTable(filteredPreview, {
+  defaultSort: { key: 'row', dir: 'asc' },
+  getSearchText: (row) => [row.sheet, row.row, row.slug, row.label, row.action, row.status, ...(row.conflicts || [])].join(' '),
+});
+
 const applyCount = computed(() => {
   const rows = result.value?.preview ?? [];
   return rows.filter((row) => row.status !== 'error' && rowDecision(row.key, row.recommended) === 'apply').length;
@@ -326,7 +347,7 @@ function initDecisionsFromPreview(preview) {
 function applyBulk(decision) {
   if (!reviewMode.value) return;
   const next = { ...rowDecisions.value };
-  for (const row of filteredPreview.value) {
+  for (const row of displayPreview.value) {
     if (row.status !== 'error') {
       next[row.key] = decision;
     }

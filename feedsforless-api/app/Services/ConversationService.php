@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Domains\B2B\Models\User;
 use App\Domains\Conversations\Models\Conversation;
 use App\Domains\Conversations\Models\ConversationMessage;
+use App\Domains\Quotes\Models\QuoteRequest;
 use App\Mail\ChatMessageNotificationMail;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
@@ -16,6 +17,7 @@ class ConversationService
     public function findOrCreateForUser(User $user): Conversation
     {
         $existing = Conversation::query()
+            ->general()
             ->where('user_id', $user->id)
             ->where('status', 'open')
             ->orderByDesc('last_message_at')
@@ -42,7 +44,7 @@ class ConversationService
 
         if ($conversationId && $accessToken) {
             $conversation = Conversation::find($conversationId);
-            if ($conversation && $this->guestTokenMatches($conversation, $accessToken)) {
+            if ($conversation && $conversation->isGeneralConversation() && $this->guestTokenMatches($conversation, $accessToken)) {
                 if ($conversation->status === 'closed') {
                     $conversation->update(['status' => 'open']);
                 }
@@ -52,6 +54,7 @@ class ConversationService
         }
 
         $existing = Conversation::query()
+            ->general()
             ->whereNull('user_id')
             ->where('guest_email', $email)
             ->where('status', 'open')
@@ -75,6 +78,152 @@ class ConversationService
         ]);
 
         return ['conversation' => $conversation, 'access_token' => $token];
+    }
+
+    public function findOrCreateForQuote(QuoteRequest $quote): Conversation
+    {
+        $existing = Conversation::query()->forQuote($quote->id)->first();
+
+        if ($existing) {
+            return $existing;
+        }
+
+        $data = [
+            'quote_request_id' => $quote->id,
+            'status' => 'open',
+        ];
+
+        if ($quote->request_by_id) {
+            $user = $quote->requester;
+            $data['user_id'] = $user->id;
+            $data['guest_email'] = $user->email;
+            $data['guest_name'] = trim(($user->first_name ?? '') . ' ' . ($user->last_name ?? '')) ?: null;
+        } else {
+            $data['guest_email'] = $quote->guest_email ? strtolower(trim($quote->guest_email)) : null;
+            $data['guest_name'] = $this->quoteGuestDisplayName($quote);
+            $data['guest_access_token'] = Str::random(48);
+        }
+
+        return Conversation::create($data);
+    }
+
+    public function authorizeQuoteAccess(QuoteRequest $quote, ?User $user, bool $isAdmin = false): bool
+    {
+        if ($isAdmin) {
+            return true;
+        }
+
+        if ($user && $quote->request_by_id === $user->id) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function authorizeQuoteConversationAccess(
+        Conversation $conversation,
+        QuoteRequest $quote,
+        ?User $user,
+        ?string $guestToken,
+        bool $isAdmin = false
+    ): bool {
+        if ($conversation->quote_request_id !== $quote->id) {
+            return false;
+        }
+
+        if ($isAdmin) {
+            return true;
+        }
+
+        if ($user && $conversation->user_id === $user->id) {
+            return true;
+        }
+
+        if ($guestToken && $this->guestTokenMatches($conversation, $guestToken)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function ensureQuoteReferenceInGeneralChat(QuoteRequest $quote): void
+    {
+        $general = $this->resolveGeneralConversationForQuote($quote);
+
+        if (!$general) {
+            return;
+        }
+
+        $alreadyPosted = $general->messages()
+            ->where('message_type', ConversationMessage::TYPE_QUOTE_REFERENCE)
+            ->where('metadata->quote_request_id', $quote->id)
+            ->exists();
+
+        if ($alreadyPosted) {
+            return;
+        }
+
+        $label = "RFQ #{$quote->id}";
+
+        $general->messages()->create([
+            'sender_type' => ConversationMessage::SENDER_SYSTEM,
+            'message_type' => ConversationMessage::TYPE_QUOTE_REFERENCE,
+            'body' => "Quote conversation for {$label}. Open the quote page to continue this discussion.",
+            'metadata' => [
+                'quote_request_id' => $quote->id,
+                'label' => $label,
+                'admin_path' => "/admin/quotes/{$quote->id}",
+                'customer_path' => "/quotes/{$quote->id}",
+            ],
+            'read_by_admin_at' => now(),
+            'read_by_customer_at' => null,
+        ]);
+
+        $general->update(['last_message_at' => now()]);
+    }
+
+    public function sendQuoteChatMessage(
+        QuoteRequest $quote,
+        Conversation $conversation,
+        string $senderType,
+        string $body,
+        ?User $senderUser = null
+    ): ConversationMessage {
+        $message = $this->sendMessage($conversation, $senderType, $body, $senderUser);
+        $this->ensureQuoteReferenceInGeneralChat($quote);
+
+        return $message;
+    }
+
+    private function resolveGeneralConversationForQuote(QuoteRequest $quote): ?Conversation
+    {
+        if ($quote->request_by_id) {
+            return $this->findOrCreateForUser($quote->requester);
+        }
+
+        if (!$quote->guest_email) {
+            return null;
+        }
+
+        $name = $this->quoteGuestDisplayName($quote);
+
+        return $this->findOrCreateForGuest(
+            email: $quote->guest_email,
+            name: $name,
+            conversationId: null,
+            accessToken: null,
+        )['conversation'];
+    }
+
+    private function quoteGuestDisplayName(QuoteRequest $quote): ?string
+    {
+        $fromParts = trim(($quote->guest_first_name ?? '') . ' ' . ($quote->guest_last_name ?? ''));
+
+        if ($fromParts !== '') {
+            return $fromParts;
+        }
+
+        return $quote->guest_contact_name ? trim($quote->guest_contact_name) : null;
     }
 
     public function guestTokenMatches(Conversation $conversation, string $token): bool
@@ -155,13 +304,76 @@ class ConversationService
 
     public function unreadCountForAdmin(): int
     {
+        return $this->unreadGeneralChatCountForAdmin() + $this->unreadQuoteChatCountForAdmin();
+    }
+
+    public function unreadGeneralChatCountForAdmin(): int
+    {
         return ConversationMessage::query()
+            ->whereHas('conversation', fn ($q) => $q->general())
             ->whereIn('sender_type', [
                 ConversationMessage::SENDER_GUEST,
                 ConversationMessage::SENDER_CUSTOMER,
             ])
             ->whereNull('read_by_admin_at')
             ->count();
+    }
+
+    public function unreadQuoteChatCountForAdmin(): int
+    {
+        return ConversationMessage::query()
+            ->whereHas('conversation', fn ($q) => $q->whereNotNull('quote_request_id'))
+            ->whereIn('sender_type', [
+                ConversationMessage::SENDER_GUEST,
+                ConversationMessage::SENDER_CUSTOMER,
+            ])
+            ->whereNull('read_by_admin_at')
+            ->count();
+    }
+
+    /**
+     * @return \Illuminate\Support\Collection<int, array{quote_request_id: int, quote_chat_unread_count: int, customer_name: string, latest_message: array|null}>
+     */
+    public function quoteChatNotificationsForAdmin(int $limit = 8): \Illuminate\Support\Collection
+    {
+        return QuoteRequest::query()
+            ->with([
+                'requester',
+                'quoteConversation.latestMessage',
+            ])
+            ->withCount('unreadQuoteChatMessages as quote_chat_unread_count')
+            ->whereHas('unreadQuoteChatMessages')
+            ->orderByDesc(
+                Conversation::query()
+                    ->select('last_message_at')
+                    ->whereColumn('conversations.quote_request_id', 'quote_requests.id')
+                    ->limit(1)
+            )
+            ->limit($limit)
+            ->get()
+            ->map(fn (QuoteRequest $quote) => [
+                'quote_request_id' => $quote->id,
+                'quote_chat_unread_count' => (int) $quote->quote_chat_unread_count,
+                'customer_name' => $this->quoteCustomerName($quote),
+                'latest_message' => $quote->quoteConversation?->latestMessage
+                    ? [
+                        'id' => $quote->quoteConversation->latestMessage->id,
+                        'body' => $quote->quoteConversation->latestMessage->body,
+                        'created_at' => $quote->quoteConversation->latestMessage->created_at?->toIso8601String(),
+                    ]
+                    : null,
+            ]);
+    }
+
+    private function quoteCustomerName(QuoteRequest $quote): string
+    {
+        if ($quote->requester) {
+            $name = trim(($quote->requester->first_name ?? '') . ' ' . ($quote->requester->last_name ?? ''));
+
+            return $name !== '' ? $name : (string) $quote->requester->email;
+        }
+
+        return (string) ($quote->guest_contact_name ?: $quote->guest_email ?: 'Guest');
     }
 
     /**

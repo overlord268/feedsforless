@@ -38,6 +38,8 @@ class QuoteRequestResource extends JsonResource
             'guest_email' => $this->guest_email,
             'guest_company_name' => $this->guest_company_name,
             'guest_contact_name' => $this->guest_contact_name,
+            'guest_first_name' => $this->guest_first_name,
+            'guest_last_name' => $this->guest_last_name,
             'guest_phone' => $this->guest_phone,
             'guest_destination_address' => $this->guest_destination_address,
             'guest_tax_id' => $this->guest_tax_id ?? null,
@@ -62,6 +64,8 @@ class QuoteRequestResource extends JsonResource
                     'email' => $this->guest_email,
                     'first_name' => null,
                     'last_name' => null,
+                    'guest_first_name' => $this->guest_first_name,
+                    'guest_last_name' => $this->guest_last_name,
                     'contact_name' => $this->guest_contact_name,
                     'phone' => $this->guest_phone,
                     'job_title' => null,
@@ -70,6 +74,10 @@ class QuoteRequestResource extends JsonResource
                 ];
             }),
             'items' => QuoteRequestItemResource::collection($this->whenLoaded('items')),
+            'quote_chat_unread_count' => $this->when(
+                $request->user() && $this->userIsAdmin($request),
+                (int) ($this->quote_chat_unread_count ?? 0)
+            ),
         ];
     }
 

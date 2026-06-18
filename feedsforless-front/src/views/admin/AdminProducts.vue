@@ -53,11 +53,19 @@
     </div>
 
     <div class="bg-white rounded-2xl border border-slate-200/80 shadow-card overflow-hidden min-h-[420px] flex flex-col">
+      <TableSearchToolbar
+        v-model="searchQuery"
+        title="Products"
+        search-placeholder="Search products…"
+        :filtered-count="tableProducts.length"
+        :total-count="statusFilteredProducts.length"
+        item-label="products"
+      />
       <div class="overflow-x-auto table-scroll flex-1 min-h-0">
         <table class="w-full text-sm min-w-[700px]">
           <thead class="bg-slate-50/80 border-b border-slate-200">
             <tr class="text-left">
-              <th class="px-4 py-3.5 w-10">
+              <th class="px-4 py-2.5 w-10">
                 <input
                   type="checkbox"
                   class="rounded border-slate-300"
@@ -66,16 +74,24 @@
                   @change="toggleSelectAll"
                 >
               </th>
-              <th class="px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">SKU</th>
-              <th class="px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Name</th>
-              <th class="px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Price</th>
-              <th class="px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
-              <th class="px-4 py-3.5 w-28 text-right text-xs font-semibold text-slate-500 uppercase tracking-wider">Actions</th>
+              <th class="px-4 py-2.5 text-[11px] font-semibold text-slate-500 uppercase tracking-wider cursor-pointer select-none hover:text-slate-700" @click="toggleSort('sku')">
+                <span class="inline-flex items-center gap-1">SKU <TableSortIcon :active="sort.key === 'sku'" :dir="sort.dir" /></span>
+              </th>
+              <th class="px-4 py-2.5 text-[11px] font-semibold text-slate-500 uppercase tracking-wider cursor-pointer select-none hover:text-slate-700" @click="toggleSort('name')">
+                <span class="inline-flex items-center gap-1">Name <TableSortIcon :active="sort.key === 'name'" :dir="sort.dir" /></span>
+              </th>
+              <th class="px-4 py-2.5 text-[11px] font-semibold text-slate-500 uppercase tracking-wider cursor-pointer select-none hover:text-slate-700" @click="toggleSort('price')">
+                <span class="inline-flex items-center gap-1">Price <TableSortIcon :active="sort.key === 'price'" :dir="sort.dir" /></span>
+              </th>
+              <th class="px-4 py-2.5 text-[11px] font-semibold text-slate-500 uppercase tracking-wider cursor-pointer select-none hover:text-slate-700" @click="toggleSort('status')">
+                <span class="inline-flex items-center gap-1">Status <TableSortIcon :active="sort.key === 'status'" :dir="sort.dir" /></span>
+              </th>
+              <th class="px-4 py-2.5 w-28 text-right text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100">
             <tr
-              v-for="product in filteredProducts"
+              v-for="product in tableProducts"
               :key="product.id"
               :class="product.deleted_at ? 'bg-red-50/40' : 'hover:bg-slate-50/70'"
               class="transition-colors"
@@ -148,11 +164,13 @@
           </tbody>
         </table>
       </div>
-      <p v-if="!loading && filteredProducts.length === 0" class="px-6 py-12 text-center text-slate-500">
-        No products in this view.
-        <router-link :to="{ name: 'AdminProductCreate' }" class="text-emerald-600 hover:underline">Create one</router-link>
-        or
-        <router-link :to="{ name: 'AdminProductImport' }" class="text-emerald-600 hover:underline">import</router-link>.
+      <p v-if="!loading && tableProducts.length === 0" class="px-6 py-12 text-center text-slate-500">
+        {{ searchQuery ? 'No products match your search.' : 'No products in this view.' }}
+        <template v-if="!searchQuery">
+          <router-link :to="{ name: 'AdminProductCreate' }" class="text-emerald-600 hover:underline">Create one</router-link>
+          or
+          <router-link :to="{ name: 'AdminProductImport' }" class="text-emerald-600 hover:underline">import</router-link>.
+        </template>
       </p>
       <div v-if="loading" class="px-6 py-12 text-center text-slate-500">Loading…</div>
     </div>
@@ -165,6 +183,9 @@ import { useRoute, useRouter } from 'vue-router';
 import api from '../../services/api';
 import { useToast } from '../../composables/useToast';
 import { useConfirm } from '../../composables/useConfirm';
+import { useSortableTable } from '../../composables/useSortableTable';
+import TableSearchToolbar from '../../components/admin/TableSearchToolbar.vue';
+import TableSortIcon from '../../components/admin/TableSortIcon.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -193,12 +214,45 @@ const filteredProducts = computed(() => {
   });
 });
 
+const statusFilteredProducts = computed(() => filteredProducts.value);
+
+function productPrice(product) {
+  return product.packaging_options?.length ? Number(product.packaging_options[0].base_price_per_unit) : 0;
+}
+
+function productStatusLabel(product) {
+  if (product.deleted_at) return 'deleted';
+  return product.status === 'published' ? 'published' : 'draft';
+}
+
+const {
+  searchQuery,
+  sort,
+  processedItems: tableProducts,
+  toggleSort,
+} = useSortableTable(statusFilteredProducts, {
+  defaultSort: { key: 'name', dir: 'asc' },
+  getSortValue: (product, key) => {
+    if (key === 'sku') return product.sku || '';
+    if (key === 'name') return product.name || '';
+    if (key === 'price') return productPrice(product);
+    if (key === 'status') return productStatusLabel(product);
+    return product[key];
+  },
+  getSearchText: (product) => [
+    product.sku,
+    product.name,
+    productStatusLabel(product),
+    formatPrice(productPrice(product)),
+  ].join(' '),
+});
+
 const allVisibleSelected = computed(() => {
-  const visible = filteredProducts.value;
+  const visible = tableProducts.value;
   return visible.length > 0 && visible.every((p) => selectedIds.value.has(p.id));
 });
 
-const someVisibleSelected = computed(() => filteredProducts.value.some((p) => selectedIds.value.has(p.id)));
+const someVisibleSelected = computed(() => tableProducts.value.some((p) => selectedIds.value.has(p.id)));
 
 function formatPrice(val) {
   if (val == null) return '—';
@@ -215,11 +269,11 @@ function toggleSelect(id) {
 function toggleSelectAll() {
   if (allVisibleSelected.value) {
     const next = new Set(selectedIds.value);
-    filteredProducts.value.forEach((p) => next.delete(p.id));
+    tableProducts.value.forEach((p) => next.delete(p.id));
     selectedIds.value = next;
   } else {
     const next = new Set(selectedIds.value);
-    filteredProducts.value.forEach((p) => next.add(p.id));
+    tableProducts.value.forEach((p) => next.add(p.id));
     selectedIds.value = next;
   }
 }

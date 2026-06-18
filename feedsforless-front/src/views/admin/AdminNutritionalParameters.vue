@@ -24,6 +24,9 @@
       :columns="columns"
       :items="items"
       :loading="loading"
+      title="Nutritional parameters"
+      search-placeholder="Search parameters…"
+      item-label="parameters"
       empty-message="No parameters yet."
     >
       <template #row="{ item }">

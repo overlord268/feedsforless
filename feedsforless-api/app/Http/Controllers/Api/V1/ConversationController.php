@@ -98,6 +98,10 @@ class ConversationController extends Controller
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
+        if ($conversation->isQuoteConversation()) {
+            return response()->json(['message' => 'Use the quote page to view this conversation.'], 403);
+        }
+
         $this->conversations->markReadByCustomer($conversation);
 
         $conversation->loadCount([
@@ -123,6 +127,10 @@ class ConversationController extends Controller
     ): JsonResponse {
         if (!$this->authorizeCustomer($request, $conversation)) {
             return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        if ($conversation->isQuoteConversation()) {
+            return response()->json(['message' => 'Use the quote page to view this conversation.'], 403);
         }
 
         $user = $request->user();

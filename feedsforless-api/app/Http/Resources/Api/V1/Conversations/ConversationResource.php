@@ -12,6 +12,8 @@ class ConversationResource extends JsonResource
         return [
             'id' => $this->id,
             'status' => $this->status,
+            'quote_request_id' => $this->quote_request_id,
+            'is_quote_conversation' => $this->isQuoteConversation(),
             'customer_name' => $this->customerDisplayName(),
             'customer_email' => $this->customerEmail(),
             'is_guest' => $this->user_id === null,

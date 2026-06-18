@@ -1,14 +1,17 @@
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import api from '../services/api';
 import { playNotificationSound } from './useNotificationSound';
 
 const unreadCount = ref(0);
+const generalUnreadCount = ref(0);
+const quoteChatUnreadCount = ref(0);
 const recentPreview = ref([]);
+const quoteChatPreview = ref([]);
 let pollTimer = null;
 let initialized = false;
 let subscriberCount = 0;
-/** Highest customer/guest message id we have already notified about. */
 let lastNotifiedCustomerMessageId = 0;
+let lastNotifiedQuoteMessageId = 0;
 
 function extractList(listRes) {
   const raw = listRes.data?.data ?? listRes.data;
@@ -27,6 +30,18 @@ function findNewCustomerMessageId(list) {
   return newest;
 }
 
+function findNewQuoteMessageId(quotes) {
+  let newest = null;
+  for (const quote of quotes) {
+    const msg = quote.latest_message;
+    if (!msg?.id) continue;
+    if (msg.id > lastNotifiedQuoteMessageId && (newest === null || msg.id > newest)) {
+      newest = msg.id;
+    }
+  }
+  return newest;
+}
+
 function seedBaselineFromList(list) {
   for (const conv of list) {
     const msg = conv.latest_message;
@@ -36,30 +51,50 @@ function seedBaselineFromList(list) {
   }
 }
 
+function seedQuoteBaseline(quotes) {
+  for (const quote of quotes) {
+    const msg = quote.latest_message;
+    if (msg?.id > lastNotifiedQuoteMessageId) {
+      lastNotifiedQuoteMessageId = msg.id;
+    }
+  }
+}
+
 async function fetchSnapshot() {
-  const [countRes, listRes] = await Promise.all([
+  const [countRes, listRes, quoteRes] = await Promise.all([
     api.get('/api/v1/admin/conversations/unread-count'),
     api.get('/api/v1/admin/conversations', { params: { page: 1 } }),
+    api.get('/api/v1/admin/quote-requests/chat-notifications'),
   ]);
 
-  const count = countRes.data?.unread_count ?? 0;
-  const list = extractList(listRes);
-  recentPreview.value = list.slice(0, 5);
-  unreadCount.value = count;
+  generalUnreadCount.value = countRes.data?.general_unread_count ?? 0;
+  quoteChatUnreadCount.value = countRes.data?.quote_chat_unread_count ?? quoteRes.data?.unread_count ?? 0;
+  unreadCount.value = countRes.data?.unread_count ?? (generalUnreadCount.value + quoteChatUnreadCount.value);
 
-  return list;
+  const list = extractList(listRes);
+  recentPreview.value = list.filter((conv) => (conv.unread_count ?? 0) > 0).slice(0, 5);
+  quoteChatPreview.value = quoteRes.data?.quotes ?? [];
+
+  return { list, quotes: quoteChatPreview.value };
 }
 
 async function poll({ playSound = false } = {}) {
   try {
-    const list = await fetchSnapshot();
+    const { list, quotes } = await fetchSnapshot();
     const newCustomerMessageId = findNewCustomerMessageId(list);
+    const newQuoteMessageId = findNewQuoteMessageId(quotes);
 
     if (!initialized) {
       seedBaselineFromList(list);
-    } else if (playSound && newCustomerMessageId !== null) {
-      lastNotifiedCustomerMessageId = newCustomerMessageId;
-      playNotificationSound();
+      seedQuoteBaseline(quotes);
+    } else if (playSound) {
+      if (newCustomerMessageId !== null) {
+        lastNotifiedCustomerMessageId = newCustomerMessageId;
+        playNotificationSound();
+      } else if (newQuoteMessageId !== null) {
+        lastNotifiedQuoteMessageId = newQuoteMessageId;
+        playNotificationSound();
+      }
     }
 
     initialized = true;
@@ -68,7 +103,6 @@ async function poll({ playSound = false } = {}) {
   }
 }
 
-/** Refresh badge/list only — does not affect sound baseline. */
 async function refresh() {
   try {
     await fetchSnapshot();
@@ -94,7 +128,6 @@ export function useAdminChatNotifier() {
     }
   }
 
-  /** Mark specific message ids as already notified (admin opened the thread). */
   function acknowledgeMessageIds(ids) {
     for (const id of ids) {
       if (typeof id === 'number' && id > lastNotifiedCustomerMessageId) {
@@ -103,11 +136,26 @@ export function useAdminChatNotifier() {
     }
   }
 
+  function acknowledgeQuoteMessageIds(ids) {
+    for (const id of ids) {
+      if (typeof id === 'number' && id > lastNotifiedQuoteMessageId) {
+        lastNotifiedQuoteMessageId = id;
+      }
+    }
+  }
+
+  const hasNotifications = computed(() => unreadCount.value > 0);
+
   return {
     unreadCount,
+    generalUnreadCount,
+    quoteChatUnreadCount,
     recentPreview,
+    quoteChatPreview,
+    hasNotifications,
     refresh,
     acknowledgeMessageIds,
+    acknowledgeQuoteMessageIds,
     startPolling,
     stopPolling,
   };

@@ -112,9 +112,15 @@
                   <label class="block text-[10px] font-bold text-slate-600 uppercase tracking-widest mb-1.5">Legal Business Name*</label>
                   <input v-model="form.legal_name" type="text" class="w-full min-h-[44px] border border-slate-300 bg-slate-50 px-3 py-2 text-sm focus:outline-none focus:border-[#2962ff] text-slate-800 font-medium touch-manipulation" />
                 </div>
-                <div>
-                  <label class="block text-[10px] font-bold text-slate-600 uppercase tracking-widest mb-1.5">Authorized Procurement Contact*</label>
-                  <input v-model="form.contact_name" type="text" class="w-full min-h-[44px] border border-slate-300 bg-slate-50 px-3 py-2 text-sm focus:outline-none focus:border-[#2962ff] text-slate-800 font-medium touch-manipulation" />
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-[10px] font-bold text-slate-600 uppercase tracking-widest mb-1.5">First Name*</label>
+                    <input v-model="form.first_name" type="text" class="w-full min-h-[44px] border border-slate-300 bg-slate-50 px-3 py-2 text-sm focus:outline-none focus:border-[#2962ff] text-slate-800 font-medium touch-manipulation" />
+                  </div>
+                  <div>
+                    <label class="block text-[10px] font-bold text-slate-600 uppercase tracking-widest mb-1.5">Last Name*</label>
+                    <input v-model="form.last_name" type="text" class="w-full min-h-[44px] border border-slate-300 bg-slate-50 px-3 py-2 text-sm focus:outline-none focus:border-[#2962ff] text-slate-800 font-medium touch-manipulation" />
+                  </div>
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
@@ -234,7 +240,8 @@ const isAdmin = computed(() => {
 
 const form = reactive({
   legal_name: '',
-  contact_name: '',
+  first_name: '',
+  last_name: '',
   email: '',
   phone: '',
   tax_id: '',
@@ -317,7 +324,8 @@ async function fetchProduct() {
     }
     if (authStore.user) {
       form.legal_name = authStore.user.company_name || '';
-      form.contact_name = [authStore.user.first_name, authStore.user.last_name].filter(Boolean).join(' ') || authStore.user.name || '';
+      form.first_name = authStore.user.first_name || '';
+      form.last_name = authStore.user.last_name || '';
       form.email = authStore.user.email || '';
       form.phone = authStore.user.phone || '';
     }
@@ -346,7 +354,8 @@ onMounted(() => {
   fetchSidebarCategories();
   if (authStore.user) {
     form.legal_name = authStore.user.company_name || form.legal_name;
-    form.contact_name = form.contact_name || [authStore.user.first_name, authStore.user.last_name].filter(Boolean).join(' ') || authStore.user.name || '';
+    form.first_name = form.first_name || authStore.user.first_name || '';
+    form.last_name = form.last_name || authStore.user.last_name || '';
     form.email = authStore.user.email || form.email;
     form.phone = authStore.user.phone || form.phone;
   }
@@ -381,8 +390,12 @@ async function submitQuote() {
       toast.error('Legal business name is required.');
       return;
     }
-    if (!form.contact_name || !form.contact_name.trim()) {
-      toast.error('Authorized procurement contact is required.');
+    if (!form.first_name || !form.first_name.trim()) {
+      toast.error('First name is required.');
+      return;
+    }
+    if (!form.last_name || !form.last_name.trim()) {
+      toast.error('Last name is required.');
       return;
     }
     if (!form.phone || !form.phone.trim()) {
@@ -417,7 +430,8 @@ async function submitQuote() {
         requires_appointment: !!form.requires_appointment,
         email: form.email.trim(),
         legal_name: form.legal_name.trim(),
-        contact_name: form.contact_name.trim(),
+        first_name: form.first_name.trim(),
+        last_name: form.last_name.trim(),
         phone: form.phone.trim(),
         tax_id: form.tax_id?.trim() || null
       });

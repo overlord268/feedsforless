@@ -80,19 +80,29 @@
     </div>
 
     <div class="bg-white rounded-2xl border border-slate-200/80 shadow-card overflow-hidden min-h-[420px] flex flex-col">
+      <TableSearchToolbar
+        v-model="searchQuery"
+        title="Product margins"
+        search-placeholder="Search products on this page…"
+        :filtered-count="tableProducts.length"
+        :total-count="products.length"
+        item-label="products"
+      />
       <div v-if="loading" class="py-16 flex justify-center text-slate-500">Loading…</div>
       <div v-else class="overflow-x-auto table-scroll flex-1 min-h-0">
         <table class="w-full text-sm min-w-[980px]">
           <thead class="bg-slate-50/80 border-b border-slate-200">
             <tr class="text-left">
-              <th class="px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider w-[220px]">Product</th>
+              <th class="px-4 py-2.5 text-[11px] font-semibold text-slate-500 uppercase tracking-wider w-[220px] cursor-pointer select-none hover:text-slate-700" @click="toggleSort('name')">
+                <span class="inline-flex items-center gap-1">Product <TableSortIcon :active="sort.key === 'name'" :dir="sort.dir" /></span>
+              </th>
               <th class="px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Pricing &amp; margins</th>
               <th class="px-4 py-3.5 w-28 text-right text-xs font-semibold text-slate-500 uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100">
             <tr
-              v-for="row in products"
+              v-for="row in tableProducts"
               :key="row.id"
               class="product-row transition-colors duration-200 align-top"
               :class="row.deleted_at ? 'bg-red-50/40' : 'hover:bg-slate-50/50'"
@@ -354,6 +364,9 @@
 import { ref, reactive, onMounted } from 'vue';
 import api from '../../services/api';
 import { useToast } from '../../composables/useToast';
+import { useSortableTable } from '../../composables/useSortableTable';
+import TableSearchToolbar from '../../components/admin/TableSearchToolbar.vue';
+import TableSortIcon from '../../components/admin/TableSortIcon.vue';
 import {
   marginSourceBadgeClass,
   marginSourceLabel,
@@ -365,6 +378,17 @@ const { showToast } = useToast();
 
 const products = ref([]);
 const loading = ref(true);
+
+const {
+  searchQuery,
+  sort,
+  processedItems: tableProducts,
+  toggleSort,
+} = useSortableTable(products, {
+  defaultSort: { key: 'name', dir: 'asc' },
+  getSortValue: (row, key) => (key === 'name' ? row.name || row.sku || '' : row[key]),
+  getSearchText: (row) => [row.sku, row.name, row.status].join(' '),
+});
 const savingGlobal = ref(false);
 const successMessage = ref('');
 const globalMargin = ref(15);

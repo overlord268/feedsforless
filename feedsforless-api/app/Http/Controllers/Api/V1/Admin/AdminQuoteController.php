@@ -11,13 +11,16 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\DB;
+use App\Services\ConversationService;
 use App\Services\QuoteRequestNotifier;
 
 class AdminQuoteController extends Controller
 {
     public function index(Request $request): AnonymousResourceCollection
     {
-        $quotes = QuoteRequest::with(['requester', 'items.product', 'items.packagingType'])
+        $quotes = QuoteRequest::query()
+            ->with(['requester', 'items.product', 'items.packagingType'])
+            ->withCount('unreadQuoteChatMessages as quote_chat_unread_count')
             ->orderBy('created_at', 'desc')
             ->paginate(15);
 
@@ -38,6 +41,16 @@ class AdminQuoteController extends Controller
         return response()->json([
             'pending_count' => $pendingCount,
             'recent' => QuoteRequestResource::collection($recent)->resolve(),
+        ]);
+    }
+
+    public function chatNotifications(ConversationService $conversations): JsonResponse
+    {
+        $quotes = $conversations->quoteChatNotificationsForAdmin();
+
+        return response()->json([
+            'unread_count' => $conversations->unreadQuoteChatCountForAdmin(),
+            'quotes' => $quotes->values()->all(),
         ]);
     }
 

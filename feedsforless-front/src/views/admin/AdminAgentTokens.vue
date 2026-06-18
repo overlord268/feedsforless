@@ -51,7 +51,7 @@
       </button>
     </div>
 
-    <CrudTable :columns="columns" :items="items" :loading="loading">
+    <CrudTable :columns="columns" :items="items" :loading="loading" title="AI agent tokens" search-placeholder="Search tokens…" item-label="tokens">
       <template #row="{ item }">
         <td class="px-6 py-4 text-slate-800 font-medium">{{ item.name }}</td>
         <td class="px-6 py-4">
@@ -118,10 +118,10 @@ import FormInput from '../../components/ui/FormInput.vue';
 
 const columns = [
   { key: 'name', label: 'Name' },
-  { key: 'status', label: 'Status' },
-  { key: 'last_used', label: 'Last used' },
-  { key: 'created', label: 'Created' },
-  { key: 'actions', label: 'Actions', thClass: 'px-6 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider w-32' },
+  { key: 'status', label: 'Status', sortValue: (i) => (i.is_active ? 'active' : 'revoked') },
+  { key: 'last_used', label: 'Last used', sortValue: (i) => i.last_used_at || '' },
+  { key: 'created', label: 'Created', sortValue: (i) => i.created_at || '' },
+  { key: 'actions', label: 'Actions', thClass: 'px-4 py-2.5 text-[11px] font-semibold text-slate-500 uppercase tracking-wider w-32' },
 ];
 
 const items = ref([]);

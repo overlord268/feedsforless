@@ -16,6 +16,7 @@
         </div>
         <ChatPanel
           class="flex-1 min-h-0"
+          link-context="customer"
           :conversation-id="conversationId"
           :messages="messages"
           :loading="loading"

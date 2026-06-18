@@ -23,7 +23,8 @@ class SubmitGuestQuoteRequestRequest extends FormRequest
             'requires_appointment' => ['nullable', 'boolean'],
             'email' => ['required', 'email'],
             'legal_name' => ['required', 'string', 'max:255'],
-            'contact_name' => ['required', 'string', 'max:255'],
+            'first_name' => ['required', 'string', 'max:100'],
+            'last_name' => ['required', 'string', 'max:100'],
             'phone' => ['required', 'string', 'max:50'],
             'tax_id' => ['nullable', 'string', 'max:100'],
         ];

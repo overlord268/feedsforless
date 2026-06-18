@@ -1,6 +1,6 @@
 <template>
   <div class="min-h-full bg-[#f8fafc] dark:bg-slate-900 animate-in fade-in duration-300">
-    <div class="max-w-4xl mx-auto px-4 py-8 md:py-10">
+    <div class="max-w-6xl mx-auto px-4 py-8 md:py-10">
       <router-link
         to="/quotes"
         class="inline-flex items-center gap-2 text-sm font-semibold text-[#2962ff] hover:text-[#003366] mb-6 transition-colors"
@@ -44,13 +44,13 @@
           <p class="text-sm whitespace-pre-wrap">{{ quote.customer_message }}</p>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-          <section class="lg:col-span-2 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
-            <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-700">
+        <div class="grid grid-cols-1 xl:grid-cols-12 gap-5 items-start">
+          <section class="xl:col-span-8 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
+            <div class="px-5 py-4 border-b border-slate-100 dark:border-slate-700">
               <h2 class="text-[11px] font-black uppercase tracking-widest text-slate-400">Requested items</h2>
             </div>
             <div class="divide-y divide-slate-100 dark:divide-slate-700">
-              <div v-for="item in quote.items" :key="item.id" class="p-6">
+              <div v-for="item in quote.items" :key="item.id" class="p-5">
                 <div class="flex flex-wrap items-start justify-between gap-3 mb-3">
                   <div>
                     <h3 class="font-bold text-[#2962ff] dark:text-blue-400">{{ item.product?.name || 'Product' }}</h3>
@@ -75,54 +75,74 @@
                 <p v-else class="text-xs text-slate-400 italic">Pricing will appear when your quote is ready.</p>
               </div>
             </div>
-            <div v-if="showPricing" class="px-6 py-4 bg-slate-50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-700 flex justify-between items-center">
+            <div v-if="showPricing" class="px-5 py-4 bg-slate-50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-700 flex justify-between items-center">
               <span class="text-sm font-bold text-slate-600 uppercase tracking-wider">Estimated total</span>
               <span class="text-2xl font-black text-[#003366] dark:text-white">${{ formatQuoteMoney(quote.total_estimated_cost) }}</span>
             </div>
           </section>
 
-          <section class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-6 h-fit">
-            <h2 class="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-4">Delivery</h2>
-            <dl class="space-y-3 text-sm">
-              <div>
-                <dt class="text-[10px] font-bold uppercase text-slate-400">ZIP code</dt>
-                <dd class="font-semibold text-slate-800 dark:text-slate-200">{{ quote.delivery_zip || '—' }}</dd>
-              </div>
-              <div v-if="quote.address">
-                <dt class="text-[10px] font-bold uppercase text-slate-400">Address</dt>
-                <dd class="text-slate-700 dark:text-slate-300">{{ quote.address.address_line_1 }}, {{ quote.address.city }}</dd>
-              </div>
-              <div class="pt-3 border-t border-slate-100 dark:border-slate-700 space-y-2">
-                <div class="flex justify-between">
-                  <span class="text-slate-600">Liftgate</span>
-                  <span class="font-semibold" :class="quote.requires_liftgate ? 'text-emerald-600' : 'text-slate-400'">{{ quote.requires_liftgate ? 'Yes' : 'No' }}</span>
+          <aside class="xl:col-span-4 space-y-5 xl:sticky xl:top-4">
+            <section class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-5">
+              <h2 class="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-4">Delivery</h2>
+              <dl class="space-y-3 text-sm">
+                <div>
+                  <dt class="text-[10px] font-bold uppercase text-slate-400">ZIP code</dt>
+                  <dd class="font-semibold text-slate-800 dark:text-slate-200">{{ quote.delivery_zip || '—' }}</dd>
                 </div>
-                <div class="flex justify-between">
-                  <span class="text-slate-600">Appointment</span>
-                  <span class="font-semibold" :class="quote.requires_appointment ? 'text-emerald-600' : 'text-slate-400'">{{ quote.requires_appointment ? 'Yes' : 'No' }}</span>
+                <div v-if="quote.address">
+                  <dt class="text-[10px] font-bold uppercase text-slate-400">Address</dt>
+                  <dd class="text-slate-700 dark:text-slate-300">{{ quote.address.address_line_1 }}, {{ quote.address.city }}</dd>
                 </div>
-              </div>
-            </dl>
+                <div class="pt-3 border-t border-slate-100 dark:border-slate-700 space-y-2">
+                  <div class="flex justify-between">
+                    <span class="text-slate-600">Liftgate</span>
+                    <span class="font-semibold" :class="quote.requires_liftgate ? 'text-emerald-600' : 'text-slate-400'">{{ quote.requires_liftgate ? 'Yes' : 'No' }}</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-slate-600">Appointment</span>
+                    <span class="font-semibold" :class="quote.requires_appointment ? 'text-emerald-600' : 'text-slate-400'">{{ quote.requires_appointment ? 'Yes' : 'No' }}</span>
+                  </div>
+                </div>
+              </dl>
 
-            <div v-if="quote.status === 'quoted'" class="mt-6 pt-6 border-t border-slate-100 dark:border-slate-700 flex flex-col gap-2">
-              <button
-                type="button"
-                class="w-full py-2.5 rounded-xl bg-emerald-600 text-white text-sm font-bold hover:bg-emerald-700 transition-colors"
-                :disabled="acting"
-                @click="acceptQuote"
-              >
-                Accept quote
-              </button>
-              <button
-                type="button"
-                class="w-full py-2.5 rounded-xl border border-red-200 text-red-600 text-sm font-semibold hover:bg-red-50 transition-colors"
-                :disabled="acting"
-                @click="rejectQuote"
-              >
-                Decline
-              </button>
-            </div>
-          </section>
+              <div v-if="quote.status === 'quoted'" class="mt-5 pt-5 border-t border-slate-100 dark:border-slate-700 flex flex-col gap-2">
+                <button
+                  type="button"
+                  class="w-full py-2.5 rounded-xl bg-emerald-600 text-white text-sm font-bold hover:bg-emerald-700 transition-colors"
+                  :disabled="acting"
+                  @click="acceptQuote"
+                >
+                  Accept quote
+                </button>
+                <button
+                  type="button"
+                  class="w-full py-2.5 rounded-xl border border-red-200 text-red-600 text-sm font-semibold hover:bg-red-50 transition-colors"
+                  :disabled="acting"
+                  @click="rejectQuote"
+                >
+                  Decline
+                </button>
+              </div>
+            </section>
+
+            <section id="quote-chat" class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden flex flex-col scroll-mt-4 h-[min(400px,calc(100vh-14rem))]">
+              <div class="px-5 py-3 border-b border-slate-100 dark:border-slate-700 shrink-0">
+                <h2 class="text-[11px] font-black uppercase tracking-widest text-slate-400">Quote conversation</h2>
+                <p class="text-[11px] text-slate-500 mt-0.5">RFQ #{{ quote.id }} — separate from general messages.</p>
+              </div>
+              <ChatPanel
+                class="flex-1 min-h-0"
+                link-context="customer"
+                hide-start-form
+                :conversation-id="quoteConversationId"
+                :messages="quoteChatMessages"
+                :loading="quoteChatLoading"
+                :sending="quoteChatSending"
+                :error="quoteChatError"
+                @send="sendQuoteChatMessage"
+              />
+            </section>
+          </aside>
         </div>
       </template>
     </div>
@@ -130,10 +150,12 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRoute } from 'vue-router';
 import api from '../../services/api';
 import QuoteTimeline from '../../components/customer/QuoteTimeline.vue';
+import ChatPanel from '../../components/chat/ChatPanel.vue';
+import { useQuoteChat } from '../../composables/useQuoteChat';
 import { useConfirm } from '../../composables/useConfirm';
 import { useToast } from '../../composables/useToast';
 import {
@@ -150,6 +172,18 @@ const toast = useToast();
 const quote = ref(null);
 const loading = ref(true);
 const acting = ref(false);
+
+const {
+  conversationId: quoteConversationId,
+  chatMessages: quoteChatMessages,
+  loading: quoteChatLoading,
+  sending: quoteChatSending,
+  error: quoteChatError,
+  loadConversation: loadQuoteChat,
+  sendMessage: sendQuoteChatMessage,
+  startPolling: startQuoteChatPolling,
+  stopPolling: stopQuoteChatPolling,
+} = useQuoteChat(route.params.id, { admin: false });
 
 const timelineSteps = computed(() => quoteTimelineSteps(quote.value?.status));
 const showPricing = computed(() => ['quoted', 'accepted'].includes(quote.value?.status));
@@ -208,5 +242,18 @@ async function rejectQuote() {
   }
 }
 
-onMounted(fetchQuote);
+onMounted(async () => {
+  await fetchQuote();
+  await loadQuoteChat();
+  startQuoteChatPolling();
+  if (route.hash === '#quote-chat') {
+    requestAnimationFrame(() => {
+      document.getElementById('quote-chat')?.scrollIntoView({ behavior: 'smooth' });
+    });
+  }
+});
+
+onUnmounted(() => {
+  stopQuoteChatPolling();
+});
 </script>

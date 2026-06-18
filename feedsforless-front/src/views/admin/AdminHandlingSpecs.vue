@@ -20,7 +20,7 @@
       </button>
     </div>
 
-    <CrudTable :columns="columns" :items="items" :loading="loading">
+    <CrudTable :columns="columns" :items="items" :loading="loading" title="Handling specs" search-placeholder="Search specs…" item-label="specs">
       <template #row="{ item }">
         <td class="px-6 py-4 text-slate-700">{{ item.id }}</td>
         <td class="px-6 py-4 font-mono text-xs text-slate-600">{{ item.slug }}</td>

@@ -7,6 +7,7 @@
     <div class="flex-1 min-h-[min(70dvh,560px)] rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm bg-white dark:bg-slate-800 flex flex-col">
       <ChatPanel
         class="flex-1 min-h-0"
+        link-context="customer"
         :conversation-id="conversationId"
         :messages="messages"
         :loading="loading"

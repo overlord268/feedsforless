@@ -11,11 +11,17 @@ readonly class SubmitGuestQuoteRequestDTO
         public string $deliveryZip,
         public string $email,
         public string $legalName,
-        public string $contactName,
+        public string $firstName,
+        public string $lastName,
         public string $phone,
         public ?string $destinationAddress = null,
         public bool $requiresLiftgate = false,
         public bool $requiresAppointment = false,
         public ?string $taxId = null,
     ) {}
+
+    public function contactName(): string
+    {
+        return trim($this->firstName.' '.$this->lastName);
+    }
 }

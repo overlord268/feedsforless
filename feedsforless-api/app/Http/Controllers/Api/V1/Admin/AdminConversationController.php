@@ -22,6 +22,7 @@ class AdminConversationController extends Controller
     public function index(Request $request): AnonymousResourceCollection
     {
         $conversations = Conversation::query()
+            ->general()
             ->with(['latestMessage', 'user'])
             ->withCount([
                 'messages as unread_count' => function ($q) {
@@ -42,11 +43,17 @@ class AdminConversationController extends Controller
     {
         return response()->json([
             'unread_count' => $this->conversations->unreadCountForAdmin(),
+            'general_unread_count' => $this->conversations->unreadGeneralChatCountForAdmin(),
+            'quote_chat_unread_count' => $this->conversations->unreadQuoteChatCountForAdmin(),
         ]);
     }
 
     public function show(Conversation $conversation): JsonResponse
     {
+        if ($conversation->isQuoteConversation()) {
+            return response()->json(['message' => 'Open the quote page to view this conversation.'], 403);
+        }
+
         $this->conversations->markReadByAdmin($conversation);
 
         $conversation->load([
@@ -65,6 +72,10 @@ class AdminConversationController extends Controller
         SendConversationMessageRequest $request,
         Conversation $conversation
     ): JsonResponse {
+        if ($conversation->isQuoteConversation()) {
+            return response()->json(['message' => 'Open the quote page to reply to this conversation.'], 403);
+        }
+
         if (
             $this->conversations->isUnregisteredGuest($conversation)
             && !$conversation->guest_email

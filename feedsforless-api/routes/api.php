@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\CatalogController;
 use App\Http\Controllers\Api\V1\CategoryController;
 use App\Http\Controllers\Api\V1\RfqListController;
+use App\Http\Controllers\Api\V1\QuoteConversationController;
 use App\Http\Controllers\Api\V1\QuoteRequestController;
 use App\Http\Controllers\Api\V1\NewsletterController;
 use App\Http\Controllers\Api\V1\Admin\AdminConversationController;
@@ -13,6 +14,8 @@ use App\Http\Controllers\Api\V1\AddressController;
 use App\Http\Controllers\Api\V1\ClientDashboardController;
 use App\Http\Controllers\Api\V1\ConversationController;
 use App\Http\Controllers\Api\V1\Admin\AdminQuoteController;
+use App\Http\Controllers\Api\V1\Admin\AdminQuoteLeadController;
+use App\Http\Controllers\Api\V1\Admin\AdminQuoteConversationController;
 use App\Http\Controllers\Api\V1\Admin\AdminProductController;
 use App\Http\Controllers\Api\V1\Admin\AdminProductImportController;
 use App\Http\Controllers\Api\V1\Admin\AdminProductDocumentController;
@@ -86,6 +89,9 @@ Route::prefix('v1')->group(function () {
         Route::post('/quote-requests/{quoteRequest}/accept', [QuoteRequestController::class, 'accept']); 
         Route::post('/quote-requests/{quoteRequest}/reject', [QuoteRequestController::class, 'reject']); 
 
+        Route::get('/quote-requests/{quoteRequest}/conversation', [QuoteConversationController::class, 'show']);
+        Route::post('/quote-requests/{quoteRequest}/conversation/messages', [QuoteConversationController::class, 'sendMessage']);
+
         Route::prefix('admin')->middleware(EnsureUserIsAdmin::class)->group(function () {
 
             Route::get('dashboard/stats', [App\Http\Controllers\Api\V1\Admin\DashboardController::class, 'stats']);
@@ -122,9 +128,15 @@ Route::prefix('v1')->group(function () {
             Route::post('users/{user}/roles', [AdminUserController::class, 'assignRole']);
             Route::apiResource('companies', AdminCompanyController::class);
             
+            Route::get('/quote-leads', [AdminQuoteLeadController::class, 'index']);
+            Route::get('/quote-leads/export', [AdminQuoteLeadController::class, 'export']);
+
             Route::get('/quote-requests', [AdminQuoteController::class, 'index']);
             Route::get('/quote-requests/notifications', [AdminQuoteController::class, 'notifications']);
+            Route::get('/quote-requests/chat-notifications', [AdminQuoteController::class, 'chatNotifications']);
             Route::get('/quote-requests/{quoteRequest}', [AdminQuoteController::class, 'show']);
+            Route::get('/quote-requests/{quoteRequest}/conversation', [AdminQuoteConversationController::class, 'show']);
+            Route::post('/quote-requests/{quoteRequest}/conversation/messages', [AdminQuoteConversationController::class, 'sendMessage']);
             Route::put('/quote-requests/{quoteRequest}/prices', [AdminQuoteController::class, 'updatePrices']);
             Route::put('/quote-requests/{quoteRequest}/status', [AdminQuoteController::class, 'updateStatus']);
 

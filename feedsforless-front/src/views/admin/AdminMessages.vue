@@ -99,6 +99,7 @@
           <ChatPanel
             class="flex-1 min-h-0"
             variant="admin"
+            link-context="admin"
             hide-start-form
             :conversation-id="selectedId"
             :messages="messages"

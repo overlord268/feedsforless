@@ -57,7 +57,7 @@
             + Register grade
           </button>
         </div>
-        <CrudTable :columns="gradeColumns" :items="grades" :loading="false">
+        <CrudTable :columns="gradeColumns" :items="grades" :loading="false" title="Grade mappings" search-placeholder="Search grades…" item-label="grades">
           <template #row="{ item }">
             <td class="px-6 py-4 text-slate-800">{{ item.grade_spec }}</td>
             <td class="px-6 py-4 font-mono font-semibold text-emerald-700">{{ item.sku_code }}</td>
@@ -76,28 +76,22 @@
       </section>
 
       <section v-show="activeTab === 'audit'" class="space-y-4">
-        <div v-if="auditLoading" class="text-slate-500 text-sm">Loading…</div>
-        <div v-else-if="audits.length === 0" class="text-slate-500 text-sm">No changes yet.</div>
-        <div v-else class="overflow-x-auto rounded-xl border border-slate-200">
-          <table class="min-w-full text-sm">
-            <thead class="bg-slate-50 text-left text-slate-600">
-              <tr>
-                <th class="px-4 py-3 font-medium">When</th>
-                <th class="px-4 py-3 font-medium">User</th>
-                <th class="px-4 py-3 font-medium">Action</th>
-                <th class="px-4 py-3 font-medium">Change</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-100">
-              <tr v-for="entry in audits" :key="entry.id">
-                <td class="px-4 py-3 whitespace-nowrap text-slate-600">{{ formatDate(entry.created_at) }}</td>
-                <td class="px-4 py-3 text-slate-800">{{ entry.user?.name || '—' }}</td>
-                <td class="px-4 py-3 capitalize">{{ entry.action }}</td>
-                <td class="px-4 py-3 font-mono text-xs text-slate-600">{{ formatAuditChange(entry) }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        <CrudTable
+          :columns="auditColumns"
+          :items="audits"
+          :loading="auditLoading"
+          title="Change history"
+          search-placeholder="Search audit log…"
+          item-label="entries"
+          empty-message="No changes yet."
+        >
+          <template #row="{ item: entry }">
+            <td class="px-4 py-2.5 whitespace-nowrap text-slate-600">{{ formatDate(entry.created_at) }}</td>
+            <td class="px-4 py-2.5 text-slate-800">{{ entry.user?.name || '—' }}</td>
+            <td class="px-4 py-2.5 capitalize">{{ entry.action }}</td>
+            <td class="px-4 py-2.5 font-mono text-xs text-slate-600">{{ formatAuditChange(entry) }}</td>
+          </template>
+        </CrudTable>
       </section>
     </template>
 
@@ -198,6 +192,13 @@ const gradeColumns = [
   { key: 'grade_spec', label: 'Grade (product field)' },
   { key: 'sku_code', label: 'SKU suffix' },
   { key: 'actions', label: 'Actions' },
+];
+
+const auditColumns = [
+  { key: 'created_at', label: 'When', sortValue: (e) => e.created_at || '' },
+  { key: 'user', label: 'User', sortValue: (e) => e.user?.name || '' },
+  { key: 'action', label: 'Action' },
+  { key: 'change', label: 'Change', sortValue: (e) => formatAuditChange(e) },
 ];
 
 async function fetchConfig() {

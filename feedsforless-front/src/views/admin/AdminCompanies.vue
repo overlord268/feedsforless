@@ -13,30 +13,22 @@
         + Add company
       </button>
     </div>
-    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-card overflow-hidden">
-      <div class="overflow-x-auto table-scroll">
-        <table class="w-full text-sm min-w-[600px]">
-          <thead class="bg-slate-50/80 border-b border-slate-200">
-            <tr class="text-left">
-              <th class="px-6 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">ID</th>
-              <th class="px-6 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Name</th>
-              <th class="px-6 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Tax classification</th>
-              <th class="px-6 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Tax ID</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-slate-100">
-            <tr v-for="item in items" :key="item.id" class="hover:bg-slate-50/70 transition-colors">
-              <td class="px-6 py-4 text-slate-700">{{ item.id }}</td>
-              <td class="px-6 py-4 text-slate-800">{{ item.name }}</td>
-              <td class="px-6 py-4 text-slate-600">{{ item.tax_classification ?? '—' }}</td>
-              <td class="px-6 py-4 text-slate-600">{{ item.tax_registration_number ?? '—' }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <p v-if="!loading && items.length === 0" class="px-6 py-12 text-center text-slate-500">No records.</p>
-      <div v-if="loading" class="px-6 py-12 text-center text-slate-500">Loading…</div>
-    </div>
+
+    <CrudTable
+      :columns="columns"
+      :items="items"
+      :loading="loading"
+      title="Companies"
+      search-placeholder="Search companies…"
+      item-label="companies"
+    >
+      <template #row="{ item }">
+        <td class="px-4 py-2.5 text-slate-700">{{ item.id }}</td>
+        <td class="px-4 py-2.5 text-slate-800">{{ item.name }}</td>
+        <td class="px-4 py-2.5 text-slate-600">{{ item.tax_classification ?? '—' }}</td>
+        <td class="px-4 py-2.5 text-slate-600">{{ item.tax_registration_number ?? '—' }}</td>
+      </template>
+    </CrudTable>
 
     <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm" @click.self="showModal = false">
       <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
@@ -67,6 +59,14 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue';
 import api from '../../services/api';
+import CrudTable from '../../components/admin/CrudTable.vue';
+
+const columns = [
+  { key: 'id', label: 'ID' },
+  { key: 'name', label: 'Name' },
+  { key: 'tax_classification', label: 'Tax classification' },
+  { key: 'tax_registration_number', label: 'Tax ID' },
+];
 
 const items = ref([]);
 const loading = ref(true);

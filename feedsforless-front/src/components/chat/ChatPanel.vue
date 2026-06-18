@@ -43,9 +43,25 @@
         v-for="msg in messages"
         :key="msg.id"
         class="flex"
-        :class="msg.is_from_staff ? 'justify-start' : 'justify-end'"
+        :class="messageRowClass(msg)"
       >
         <div
+          v-if="msg.message_type === 'quote_reference' && msg.quote_reference"
+          class="w-full max-w-md mx-auto rounded-2xl border border-dashed border-blue-200 dark:border-blue-800 bg-blue-50/80 dark:bg-blue-900/20 px-4 py-3 text-center shadow-sm"
+        >
+          <p class="text-[10px] font-bold uppercase tracking-wide text-blue-600 dark:text-blue-400 mb-1">Quote conversation</p>
+          <p class="text-sm text-slate-700 dark:text-slate-200 mb-3">{{ msg.body }}</p>
+          <router-link
+            :to="{ path: quoteReferencePath(msg), hash: '#quote-chat' }"
+            class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-[#2962ff] text-white text-sm font-semibold hover:bg-blue-700 transition-colors"
+          >
+            Open {{ msg.quote_reference.label || 'quote' }}
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+          </router-link>
+          <p class="text-[10px] mt-2 opacity-55 tabular-nums">{{ formatTime(msg.created_at) }}</p>
+        </div>
+        <div
+          v-else
           class="max-w-[min(100%,28rem)] rounded-2xl px-4 py-2.5 text-sm shadow-sm"
           :class="msg.is_from_staff
             ? 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-slate-100 rounded-bl-md'
@@ -96,6 +112,7 @@ const props = defineProps({
   error: { type: String, default: '' },
   hideStartForm: { type: Boolean, default: false },
   variant: { type: String, default: 'default' },
+  linkContext: { type: String, default: 'customer' },
 });
 
 const emit = defineEmits(['start', 'send']);
@@ -135,5 +152,17 @@ function onSend() {
   if (!draft.value.trim()) return;
   emit('send', draft.value);
   draft.value = '';
+}
+
+function messageRowClass(msg) {
+  if (msg.message_type === 'quote_reference') return 'justify-center';
+  return msg.is_from_staff ? 'justify-start' : 'justify-end';
+}
+
+function quoteReferencePath(msg) {
+  const ref = msg.quote_reference;
+  if (!ref) return '/';
+  if (props.linkContext === 'admin' && ref.admin_path) return ref.admin_path;
+  return ref.customer_path || ref.admin_path || '/';
 }
 </script>
