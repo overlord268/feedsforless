@@ -22,6 +22,10 @@ API en http://localhost:8000. CORS permite `localhost:5173` y `127.0.0.1:5173` p
 ### Producción (Railway)
 En Variables del servicio API define `CORS_ALLOWED_ORIGINS` con la URL del front (ej. `https://feedsforless-front-production.up.railway.app`).
 
+Railpack instala extensiones PHP declaradas en `composer.json` (`ext-gd`, `ext-zip` para importación Excel). Si el build falla por extensiones, añade en Railway:
+
+`RAILPACK_PHP_EXTENSIONS=gd,zip`
+
 ---
 
 ## About Laravel

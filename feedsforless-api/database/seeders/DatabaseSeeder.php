@@ -7,15 +7,20 @@ use Illuminate\Database\Seeder;
 class DatabaseSeeder extends Seeder
 {
     /**
-     * Seed the application's database.
+     * Fresh install / demo reset:
+     *   php artisan migrate:fresh --seed
+     *
+     * Default logins (override via SEED_* in .env):
+     *   Admin:    admin@feedsforless.com / password
+     *   Customer: cliente@empresa.com / password
      */
     public function run(): void
     {
         $this->call([
             RolesAndPermissionsSeeder::class,
             UsersSeeder::class,
-            CatalogSeeder::class,
-            InitialProductsSeeder::class,
+            CatalogMastersSeeder::class,
+            DemoDataSeeder::class,
         ]);
     }
 }

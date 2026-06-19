@@ -34,7 +34,7 @@ class AdminConversationController extends Controller
             ])
             ->orderByDesc('last_message_at')
             ->orderByDesc('updated_at')
-            ->paginate(20);
+            ->paginate(min(max($request->integer('per_page', 20), 1), 50));
 
         return ConversationResource::collection($conversations);
     }

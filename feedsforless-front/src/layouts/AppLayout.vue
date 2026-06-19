@@ -21,7 +21,7 @@
 
       <main class="flex-1 flex flex-col min-h-0 w-full overflow-y-auto bg-slate-50/50 dark:bg-slate-900/50" :class="isFullBleed ? 'overflow-hidden p-3 sm:p-4 lg:p-5' : 'p-3 sm:p-5 md:p-6 lg:p-8'">
         <div class="mx-auto w-full flex-1 flex flex-col min-h-0" :class="isFullBleed ? 'max-w-none' : 'max-w-6xl'">
-          <router-view :key="$route.fullPath" class="flex-1 flex flex-col min-h-0"></router-view>
+          <router-view class="flex-1 flex flex-col min-h-0"></router-view>
         </div>
       </main>
     </div>
@@ -69,7 +69,7 @@ const isAdmin = computed(() => {
 });
 
 watch(isAdmin, (admin) => {
-  if (admin) startPolling(4000);
+  if (admin) startPolling();
   else stopPolling();
 }, { immediate: true });
 </script>

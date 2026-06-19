@@ -2,7 +2,8 @@
   <div class="px-4 py-3 border-b border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between">
     <div class="min-w-0">
       <p v-if="title" class="text-sm font-semibold text-slate-900 dark:text-white truncate">{{ title }}</p>
-      <p v-if="showCount" class="text-xs text-slate-500">
+      <p v-if="subtitle" class="text-xs text-slate-500 mt-0.5 leading-snug">{{ subtitle }}</p>
+      <p v-if="showCount" class="text-xs text-slate-500" :class="subtitle ? 'mt-0.5' : ''">
         {{ filteredCount }} of {{ totalCount }} {{ itemLabel }}
       </p>
     </div>
@@ -28,6 +29,7 @@
 defineProps({
   modelValue: { type: String, default: '' },
   title: { type: String, default: '' },
+  subtitle: { type: String, default: '' },
   placeholder: { type: String, default: 'Search…' },
   searchable: { type: Boolean, default: true },
   showCount: { type: Boolean, default: true },

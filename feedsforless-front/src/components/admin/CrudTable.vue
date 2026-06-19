@@ -4,6 +4,7 @@
       v-if="searchable || title"
       v-model="searchQuery"
       :title="title"
+      :subtitle="subtitle"
       :placeholder="searchPlaceholder"
       :searchable="searchable"
       :filtered-count="displayItems.length"
@@ -16,7 +17,7 @@
     </TableSearchToolbar>
 
     <div class="overflow-x-auto table-scroll">
-      <table class="w-full text-sm min-w-[600px]">
+      <table class="w-full text-sm" :class="tableClass">
         <thead class="bg-slate-50/80 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700">
           <tr class="text-left">
             <th
@@ -40,6 +41,7 @@
             v-for="item in displayItems"
             :key="item.id ?? item.key"
             class="hover:bg-slate-50/70 dark:hover:bg-slate-700/20 transition-colors"
+            :class="rowClass ? rowClass(item) : ''"
           >
             <slot name="row" :item="item" />
           </tr>
@@ -71,7 +73,9 @@ const props = defineProps({
   loading: { type: Boolean, default: false },
   searchable: { type: Boolean, default: true },
   title: { type: String, default: '' },
+  subtitle: { type: String, default: '' },
   searchPlaceholder: { type: String, default: 'Search…' },
+  tableClass: { type: String, default: 'min-w-[600px]' },
   itemLabel: { type: String, default: 'records' },
   emptyMessage: { type: String, default: 'No records.' },
   emptySearchMessage: { type: String, default: 'No records match your search.' },
@@ -80,6 +84,7 @@ const props = defineProps({
     type: Object,
     default: () => ({ key: 'id', dir: 'asc' }),
   },
+  rowClass: { type: Function, default: null },
 });
 
 const searchQuery = ref('');

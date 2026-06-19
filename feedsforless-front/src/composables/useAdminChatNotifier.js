@@ -12,6 +12,7 @@ let initialized = false;
 let subscriberCount = 0;
 let lastNotifiedCustomerMessageId = 0;
 let lastNotifiedQuoteMessageId = 0;
+const POLL_INTERVAL_MS = 12000;
 
 function extractList(listRes) {
   const raw = listRes.data?.data ?? listRes.data;
@@ -63,7 +64,7 @@ function seedQuoteBaseline(quotes) {
 async function fetchSnapshot() {
   const [countRes, listRes, quoteRes] = await Promise.all([
     api.get('/api/v1/admin/conversations/unread-count'),
-    api.get('/api/v1/admin/conversations', { params: { page: 1 } }),
+    api.get('/api/v1/admin/conversations', { params: { page: 1, per_page: 8 } }),
     api.get('/api/v1/admin/quote-requests/chat-notifications'),
   ]);
 
@@ -79,6 +80,8 @@ async function fetchSnapshot() {
 }
 
 async function poll({ playSound = false } = {}) {
+  if (document.hidden) return;
+
   try {
     const { list, quotes } = await fetchSnapshot();
     const newCustomerMessageId = findNewCustomerMessageId(list);
@@ -104,6 +107,8 @@ async function poll({ playSound = false } = {}) {
 }
 
 async function refresh() {
+  if (document.hidden) return;
+
   try {
     await fetchSnapshot();
   } catch {
@@ -111,20 +116,44 @@ async function refresh() {
   }
 }
 
+function startPollTimer(intervalMs = POLL_INTERVAL_MS) {
+  stopPollTimer();
+  pollTimer = window.setInterval(() => poll({ playSound: true }), intervalMs);
+}
+
+function stopPollTimer() {
+  if (pollTimer) {
+    clearInterval(pollTimer);
+    pollTimer = null;
+  }
+}
+
+if (typeof document !== 'undefined') {
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      stopPollTimer();
+      return;
+    }
+    if (subscriberCount > 0) {
+      poll({ playSound: false });
+      startPollTimer();
+    }
+  });
+}
+
 export function useAdminChatNotifier() {
-  function startPolling(intervalMs = 4000) {
+  function startPolling(intervalMs = POLL_INTERVAL_MS) {
     subscriberCount += 1;
     if (pollTimer) return;
 
     poll({ playSound: false });
-    pollTimer = window.setInterval(() => poll({ playSound: true }), intervalMs);
+    startPollTimer(intervalMs);
   }
 
   function stopPolling() {
     subscriberCount = Math.max(0, subscriberCount - 1);
-    if (subscriberCount === 0 && pollTimer) {
-      clearInterval(pollTimer);
-      pollTimer = null;
+    if (subscriberCount === 0) {
+      stopPollTimer();
     }
   }
 

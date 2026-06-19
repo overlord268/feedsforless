@@ -18,11 +18,13 @@ class AdminQuoteController extends Controller
 {
     public function index(Request $request): AnonymousResourceCollection
     {
+        $perPage = min(max($request->integer('per_page', 100), 1), 500);
+
         $quotes = QuoteRequest::query()
-            ->with(['requester', 'items.product', 'items.packagingType'])
+            ->with(['requester'])
             ->withCount('unreadQuoteChatMessages as quote_chat_unread_count')
-            ->orderBy('created_at', 'desc')
-            ->paginate(15);
+            ->orderByDesc('created_at')
+            ->paginate($perPage);
 
         return QuoteRequestResource::collection($quotes);
     }

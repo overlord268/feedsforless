@@ -128,6 +128,8 @@ Route::prefix('v1')->group(function () {
             Route::post('users/{user}/roles', [AdminUserController::class, 'assignRole']);
             Route::apiResource('companies', AdminCompanyController::class);
             
+            Route::get('/quote-leads/definitions', [AdminQuoteLeadController::class, 'definitions']);
+            Route::get('/quote-leads/counts', [AdminQuoteLeadController::class, 'counts']);
             Route::get('/quote-leads', [AdminQuoteLeadController::class, 'index']);
             Route::get('/quote-leads/export', [AdminQuoteLeadController::class, 'export']);
 

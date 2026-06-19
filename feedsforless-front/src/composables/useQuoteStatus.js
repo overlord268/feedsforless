@@ -7,7 +7,7 @@ const STATUS_LABELS = {
   cancelled: 'Cancelled',
 };
 
-const STATUS_CLASSES = {
+const STATUS_CLASSES_CUSTOMER = {
   pending: 'bg-amber-50 text-amber-800 ring-amber-200',
   quoted: 'bg-blue-50 text-blue-800 ring-blue-200',
   accepted: 'bg-emerald-50 text-emerald-800 ring-emerald-200',
@@ -16,12 +16,42 @@ const STATUS_CLASSES = {
   cancelled: 'bg-slate-100 text-slate-600 ring-slate-200',
 };
 
+const STATUS_CLASSES_ADMIN = {
+  pending: 'bg-amber-100 text-amber-700 border border-amber-200',
+  quoted: 'bg-blue-100 text-blue-700 border border-blue-200',
+  accepted: 'bg-emerald-100 text-emerald-700 border border-emerald-200',
+  rejected: 'bg-red-100 text-red-700 border border-red-200',
+  expired: 'bg-slate-100 text-slate-600 border border-slate-200',
+  cancelled: 'bg-slate-100 text-slate-600 border border-slate-200',
+};
+
+const STATUS_CLASSES_BADGE = {
+  pending: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300',
+  quoted: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
+  accepted: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300',
+  rejected: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
+  expired: 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-400',
+  cancelled: 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-400',
+};
+
+const STATUS_CLASS_MAP = {
+  customer: STATUS_CLASSES_CUSTOMER,
+  admin: STATUS_CLASSES_ADMIN,
+  badge: STATUS_CLASSES_BADGE,
+};
+
 export function quoteStatusLabel(status) {
   return STATUS_LABELS[status] || status || 'Unknown';
 }
 
-export function quoteStatusClass(status) {
-  return STATUS_CLASSES[status] || 'bg-slate-100 text-slate-600 ring-slate-200';
+export function quoteStatusClass(status, { variant = 'customer' } = {}) {
+  const map = STATUS_CLASS_MAP[variant] ?? STATUS_CLASSES_CUSTOMER;
+  const fallback = variant === 'customer'
+    ? 'bg-slate-100 text-slate-600 ring-slate-200'
+    : variant === 'badge'
+      ? 'bg-slate-100 text-slate-600'
+      : 'bg-slate-100 text-slate-600 border border-slate-200';
+  return map[status] || fallback;
 }
 
 export function quoteIsClosed(status) {
@@ -78,12 +108,24 @@ export function formatQuoteDate(iso) {
   }
 }
 
-export function lineItemTotal(item) {
-  const product = Number(item?.estimated_product_cost) || 0;
-  const freight = Number(item?.estimated_freight_cost) || 0;
+export function lineItemTotal(item, prices = null) {
+  const product = Number(prices?.estimated_product_cost ?? item?.estimated_product_cost) || 0;
+  const freight = Number(prices?.estimated_freight_cost ?? item?.estimated_freight_cost) || 0;
   const qty = Number(item?.qty) || 0;
-  if (item?.line_total_cost != null && item.line_total_cost !== '') {
+  if (!prices && item?.line_total_cost != null && item.line_total_cost !== '') {
     return Number(item.line_total_cost);
   }
   return (product + freight) * qty;
+}
+
+export function quoteCustomerName(quote) {
+  return quote?.customer_name || quote?.requester?.email || '—';
+}
+
+export function quoteDetailLink(quote) {
+  const base = { name: 'AdminQuoteDetails', params: { id: quote.id } };
+  if ((quote.quote_chat_unread_count ?? 0) > 0) {
+    return { ...base, hash: '#quote-chat' };
+  }
+  return base;
 }

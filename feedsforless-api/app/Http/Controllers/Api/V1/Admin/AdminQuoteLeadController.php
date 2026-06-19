@@ -45,6 +45,20 @@ class AdminQuoteLeadController extends Controller
         ]);
     }
 
+    public function definitions(): JsonResponse
+    {
+        return response()->json([
+            'definitions' => $this->leadService->definitionsList(),
+        ]);
+    }
+
+    public function counts(): JsonResponse
+    {
+        return response()->json([
+            'counts' => $this->leadService->countsByFilter(),
+        ]);
+    }
+
     public function export(Request $request): StreamedResponse
     {
         $validated = $request->validate([
